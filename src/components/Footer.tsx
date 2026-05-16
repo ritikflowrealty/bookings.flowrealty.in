@@ -7,8 +7,8 @@ export function Footer() {
         <div>
           <Logo />
           <p className="mt-4 text-sm text-ink-muted leading-relaxed max-w-sm">
-            Premium homes across Bangalore and Mysuru. Provisional booking with secure Razorpay
-            checkout and a sales team that confirms within 24 hours.
+            Curated homes from South India&rsquo;s leading developers. Reserve in seconds, with our
+            sales team on the line every step of the way.
           </p>
         </div>
         <div>

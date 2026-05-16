@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from 'next';
-import { Manrope, Fraunces } from 'next/font/google';
+import { Onest, Fraunces } from 'next/font/google';
 import './globals.css';
 
-const manrope = Manrope({
+const onest = Onest({
   subsets: ['latin'],
   variable: '--font-sans',
   weight: ['400', '500', '600', '700'],
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     template: '%s | Flow Realty',
   },
   description:
-    'Book your provisional unit in 60 seconds. Premium residential projects across Bangalore, Mysuru, Bhubaneswar, with secure Razorpay checkout.',
+    'Reserve your home in seconds. Curated residential projects across Bangalore, Mysore, and Bhubaneswar from South India\'s leading developers.',
   keywords: [
     'Flow Realty',
     'Bangalore real estate',
@@ -61,7 +61,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${manrope.variable} ${fraunces.variable}`}>
+    <html lang="en" className={`${onest.variable} ${fraunces.variable}`}>
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <script
@@ -74,7 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               url: SITE_URL,
               description:
                 'Sales outsourcing partner for premium residential developers in South India.',
-              areaServed: ['Bangalore', 'Mysuru', 'Bhubaneswar', 'Hyderabad'],
+              areaServed: ['Bangalore', 'Mysore', 'Bhubaneswar', 'Hyderabad'],
               address: {
                 '@type': 'PostalAddress',
                 addressLocality: 'Bangalore',

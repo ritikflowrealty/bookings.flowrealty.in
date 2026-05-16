@@ -7,21 +7,23 @@ export function AboutContact() {
           <div className="lg:col-span-7">
             <span className="chip">About Flow Realty</span>
             <h2 className="mt-4 font-display text-4xl sm:text-5xl tracking-tight">
-              Modern homes, backed by a sales team that picks up the phone.
+              The quiet partner behind your favourite addresses.
             </h2>
             <p className="mt-5 text-ink-muted leading-relaxed">
-              Flow Realty curates premium residential projects from trusted developers across South
-              India. We have helped families secure their homes across Bengaluru and Mysuru with a
-              process designed to be quick, transparent, and respectful of your time.
+              Flow Realty is one of South India&rsquo;s largest real-estate sales partners. We work
+              alongside developers to bring their best projects to life and to the families who
+              deserve them. Over the last four years that work has translated into more than
+              ₹3,500 Cr in residential sales across Bangalore, Mysore, and Bhubaneswar.
             </p>
             <p className="mt-3 text-ink-muted leading-relaxed">
-              Every booking on this page is provisional. Once you pay through Razorpay, our sales
-              team reviews the details and reaches out within 24 hours with confirmation, site
-              visit options, and next steps.
+              When you book a home through this page, you are tapping into that network. The
+              project is verified. The pricing is transparent. The team behind your booking has
+              already walked the site, met the developer, and signed off on what you are about to
+              own.
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
-              <span className="chip">Bengaluru</span>
-              <span className="chip">Mysuru</span>
+              <span className="chip">Bangalore</span>
+              <span className="chip">Mysore</span>
               <span className="chip">Bhubaneswar</span>
               <span className="chip">Hyderabad · soon</span>
             </div>

@@ -54,17 +54,17 @@ export default async function BookPage({ params }: { params: Promise<{ slug: str
                 <p className="mt-5 text-sm text-ink-muted leading-relaxed">{project.description}</p>
               )}
               <ul className="mt-6 space-y-2 text-sm text-ink-muted">
-                <li>• Provisional booking through Razorpay</li>
-                <li>• Sales team reviews and confirms within 24 hours</li>
-                <li>• No card data stored on this site</li>
+                <li>• Reserve through verified Razorpay checkout</li>
+                <li>• Sales team reaches out within 24 hours</li>
+                <li>• Site visit, paperwork, and possession handled end-to-end</li>
               </ul>
             </aside>
 
             <section className="lg:col-span-7">
               <div className="glass rounded-3xl p-6 sm:p-8">
-                <h2 className="font-display text-2xl">Provisional booking</h2>
+                <h2 className="font-display text-2xl">Reserve this home</h2>
                 <p className="mt-1 text-sm text-ink-muted">
-                  Enter your details. Final confirmation will come from our sales team after review.
+                  A few quick details and your unit is held for you. Our team confirms within 24 hours.
                 </p>
                 <div className="mt-6">
                   <BookingForm project={project} paymentEnabled={!!row.payment_enabled} />

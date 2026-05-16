@@ -26,12 +26,8 @@ export default async function HomePage() {
               <div className="max-w-xl">
                 <span className="chip">Live Projects</span>
                 <h2 className="mt-4 font-display text-4xl sm:text-5xl tracking-tight">
-                  Floating tiles, real homes.
+                  Homes our families call their own.
                 </h2>
-                <p className="mt-3 text-ink-muted">
-                  Tap any project to view details and start a provisional booking. Hover the tiles
-                  for a closer look.
-                </p>
               </div>
             </div>
 
@@ -42,7 +38,7 @@ export default async function HomePage() {
                 </p>
               </div>
             ) : (
-              <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 auto-rows-fr">
                 {projects.map((p, i) => (
                   <ProjectTile key={p.id} project={p} index={i} />
                 ))}

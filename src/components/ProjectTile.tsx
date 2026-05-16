@@ -44,7 +44,7 @@ export function ProjectTile({ project, index }: { project: PublicProject; index:
 
   return (
     <article
-      className="group relative"
+      className="group relative h-full"
       onMouseMove={onMouseMove}
       onMouseLeave={onLeave}
       style={{ animationDelay: `${index * 80}ms` }}
@@ -57,14 +57,14 @@ export function ProjectTile({ project, index }: { project: PublicProject; index:
         onClick={(e) => {
           if (bookingDisabled) e.preventDefault();
         }}
-        className={`block relative rounded-3xl outline-none focus-visible:ring-2 focus-visible:ring-neon-magenta/60 ${
+        className={`block h-full rounded-3xl outline-none focus-visible:ring-2 focus-visible:ring-neon-magenta/60 ${
           bookingDisabled ? 'cursor-not-allowed' : 'cursor-pointer'
         }`}
         style={{ touchAction: 'manipulation' }}
       >
         <div
           ref={ref}
-          className="relative overflow-hidden rounded-3xl glass-strong shadow-card transition-transform duration-500 will-change-transform group-hover:shadow-glow"
+          className="relative h-full flex flex-col overflow-hidden rounded-3xl glass-strong shadow-card transition-transform duration-500 will-change-transform group-hover:shadow-glow"
           style={
             isTouch
               ? undefined
@@ -75,7 +75,7 @@ export function ProjectTile({ project, index }: { project: PublicProject; index:
           }
         >
           {/* image */}
-          <div className="relative aspect-[4/3] overflow-hidden">
+          <div className="relative aspect-[4/3] overflow-hidden flex-shrink-0">
             {project.image_url ? (
               <Image
                 src={project.image_url}
@@ -100,17 +100,17 @@ export function ProjectTile({ project, index }: { project: PublicProject; index:
           </div>
 
           {/* content */}
-          <div className="p-6">
+          <div className="p-6 flex-1 flex flex-col">
             <p className="text-[11px] uppercase tracking-[0.18em] text-ink-muted">
               {project.developer}
             </p>
             <h3 className="mt-1 font-display text-2xl text-ink leading-tight">{project.name}</h3>
-            {project.description && (
-              <p className="mt-2 text-sm text-ink-muted line-clamp-2">{project.description}</p>
-            )}
+            <p className="mt-2 text-sm text-ink-muted line-clamp-2 min-h-[2.5rem]">
+              {project.description || ' '}
+            </p>
 
             {/* Visual call-to-action. Decorative; the parent link handles navigation. */}
-            <div className="mt-5 flex items-center gap-3 flex-wrap">
+            <div className="mt-auto pt-5 flex items-center gap-3 flex-wrap">
               <span
                 className={
                   bookingDisabled
