@@ -1,13 +1,24 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { PublicProject } from '@/lib/projects';
 
 export function ProjectTile({ project, index }: { project: PublicProject; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
+  const [isTouch, setIsTouch] = useState(false);
+
+  useEffect(() => {
+    // Disable mouse-tracking parallax on touch devices so taps work cleanly.
+    const mql = window.matchMedia('(hover: none), (pointer: coarse)');
+    const update = () => setIsTouch(mql.matches);
+    update();
+    mql.addEventListener?.('change', update);
+    return () => mql.removeEventListener?.('change', update);
+  }, []);
 
   function onMouseMove(e: React.MouseEvent) {
+    if (isTouch) return;
     const el = ref.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
@@ -35,10 +46,14 @@ export function ProjectTile({ project, index }: { project: PublicProject; index:
       <div
         ref={ref}
         className="tile-3d-inner relative overflow-hidden rounded-3xl glass-strong shadow-card hover:shadow-glow"
-        style={{
-          transform:
-            'perspective(1200px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateZ(0)',
-        }}
+        style={
+          isTouch
+            ? undefined
+            : {
+                transform:
+                  'perspective(1200px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateZ(0)',
+              }
+        }
       >
         {/* image */}
         <div className="relative aspect-[4/3] overflow-hidden">
@@ -66,7 +81,7 @@ export function ProjectTile({ project, index }: { project: PublicProject; index:
         </div>
 
         {/* content */}
-        <div className="p-6">
+        <div className="relative z-10 p-6">
           <p className="text-[11px] uppercase tracking-[0.18em] text-ink-muted">
             {project.developer}
           </p>
@@ -75,11 +90,17 @@ export function ProjectTile({ project, index }: { project: PublicProject; index:
             <p className="mt-2 text-sm text-ink-muted line-clamp-2">{project.description}</p>
           )}
 
-          <div className="mt-5 flex items-center gap-3">
+          <div className="mt-5 flex items-center gap-3 relative z-20">
             {bookingDisabled ? (
-              <span className="btn-ghost cursor-not-allowed opacity-60">Booking Closed</span>
+              <span className="btn-ghost cursor-not-allowed opacity-60 select-none">
+                Booking Closed
+              </span>
             ) : (
-              <Link href={`/book/${project.slug}`} className="btn-neon text-sm">
+              <Link
+                href={`/book/${project.slug}`}
+                prefetch={false}
+                className="btn-neon text-sm relative z-20"
+              >
                 Book Now
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M13 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
@@ -91,7 +112,7 @@ export function ProjectTile({ project, index }: { project: PublicProject; index:
                 href={project.learn_more_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-ghost text-sm"
+                className="btn-ghost text-sm relative z-20"
               >
                 Learn More
               </a>
@@ -99,10 +120,10 @@ export function ProjectTile({ project, index }: { project: PublicProject; index:
           </div>
         </div>
 
-        {/* glow border */}
+        {/* glow border (decorative, never blocks clicks) */}
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-white/5 group-hover:ring-neon-magenta/40 transition"
+          className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-white/5 group-hover:ring-neon-magenta/40 transition z-0"
         />
       </div>
     </article>
