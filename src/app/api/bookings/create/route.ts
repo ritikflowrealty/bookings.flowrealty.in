@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     const slug = sanitizeText(body.project_slug, 80);
-    const project = getProjectBySlug(slug);
+    const project = await getProjectBySlug(slug);
     if (!project || !project.is_visible || !project.booking_enabled) {
       return NextResponse.json(
         { ok: false, message: 'Project is not available for booking.' },
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const booking = createBooking({
+    const booking = await createBooking({
       project_id: project.id,
       full_name: sanitizeText(body.full_name, 120),
       email: sanitizeText(body.email, 200),
@@ -55,7 +55,6 @@ export async function POST(req: NextRequest) {
       pincode: sanitizeText(body.pincode, 6),
     });
 
-    // 10s timeout against unresponsive Razorpay
     const orderPromise = createRazorpayOrder({
       keyId: project.razorpay_key_id,
       keySecret: project.razorpay_key_secret,
@@ -80,8 +79,8 @@ export async function POST(req: NextRequest) {
       ),
     ])) as { id: string; amount: number };
 
-    attachOrder(booking.id, order.id);
-    audit('booking.created', {
+    await attachOrder(booking.id, order.id);
+    await audit('booking.created', {
       booking_id: booking.id,
       reference: booking.reference_number,
       project_id: project.id,
@@ -94,14 +93,14 @@ export async function POST(req: NextRequest) {
       reference_number: booking.reference_number,
       order_id: order.id,
       amount_paise: order.amount,
-      razorpay_key_id: project.razorpay_key_id, // public key only
+      razorpay_key_id: project.razorpay_key_id,
     });
   } catch (err: any) {
     const detail =
       err?.error?.description ||
       err?.message ||
       (typeof err === 'string' ? err : JSON.stringify(err));
-    audit('booking.error', { message: detail });
+    await audit('booking.error', { message: detail });
     const message =
       detail === 'Razorpay timeout'
         ? 'Payment provider did not respond. Please try again.'

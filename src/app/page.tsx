@@ -10,8 +10,8 @@ import { listVisibleProjects } from '@/lib/projects';
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
 
-export default function HomePage() {
-  const projects = listVisibleProjects();
+export default async function HomePage() {
+  const projects = await listVisibleProjects();
 
   return (
     <>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import { ensureSchema, getDb, type ProjectRow } from '@/lib/db';
 import { guardAdmin } from '@/lib/guard';
 import { audit } from '@/lib/audit';
 
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 const ALLOWED = new Set(['is_visible', 'booking_enabled', 'payment_enabled']);
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const denied = guardAdmin(req);
+  const denied = await guardAdmin(req);
   if (denied) return denied;
   const { id: idStr } = await params;
   const id = Number(idStr);
@@ -19,8 +19,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!ALLOWED.has(field)) {
     return NextResponse.json({ ok: false, message: 'Bad field.' }, { status: 400 });
   }
+  await ensureSchema();
   const db = getDb();
-  const row = db.prepare('SELECT * FROM projects WHERE id = ?').get(id) as any;
+  const result = await db.execute({ sql: 'SELECT * FROM projects WHERE id = ?', args: [id] });
+  const row = result.rows[0] as unknown as ProjectRow | undefined;
   if (!row) return NextResponse.json({ ok: false, message: 'Not found' }, { status: 404 });
 
   const newVal = value ? 1 : 0;
@@ -35,10 +37,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     );
   }
 
-  db.prepare(`UPDATE projects SET ${field} = ?, updated_at = datetime('now') WHERE id = ?`).run(
-    newVal,
-    id
-  );
-  audit('admin.project_toggle', { id, field, value: newVal });
+  await db.execute({
+    sql: `UPDATE projects SET ${field} = ?, updated_at = datetime('now') WHERE id = ?`,
+    args: [newVal, id],
+  });
+  await audit('admin.project_toggle', { id, field, value: newVal });
   return NextResponse.json({ ok: true });
 }

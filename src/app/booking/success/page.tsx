@@ -13,8 +13,8 @@ export default async function SuccessPage({
 }) {
   const sp = await searchParams;
   const ref = (sp?.ref || '').slice(0, 64);
-  const booking = ref ? getBookingByReference(ref) : null;
-  const project = booking ? getProjectById(booking.project_id) : null;
+  const booking = ref ? await getBookingByReference(ref) : null;
+  const project = booking ? await getProjectById(booking.project_id) : null;
 
   return (
     <>

@@ -9,11 +9,10 @@
     "start": "next start",
     "lint": "next lint",
     "db:init": "tsx scripts/init-db.ts",
-    "db:reset": "tsx scripts/reset-db.ts",
-    "postinstall": "npm run db:init || echo 'DB init skipped'"
+    "db:reset": "tsx scripts/reset-db.ts"
   },
   "dependencies": {
-    "better-sqlite3": "^12.4.1",
+    "@libsql/client": "^0.14.0",
     "framer-motion": "^11.11.17",
     "lucide-react": "^0.460.0",
     "next": "15.5.18",
@@ -22,7 +21,6 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.11",
     "@types/node": "^22.9.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",

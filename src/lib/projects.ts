@@ -1,4 +1,4 @@
-import { getDb, type ProjectRow } from './db';
+import { ensureSchema, getDb, rowsAs, type ProjectRow } from './db';
 
 export type PublicProject = {
   id: number;
@@ -16,9 +16,6 @@ export type PublicProject = {
   display_order: number;
 };
 
-/**
- * Strips Razorpay secrets and other admin-only fields before sending to the client.
- */
 export function toPublicProject(row: ProjectRow): PublicProject {
   return {
     id: row.id,
@@ -26,10 +23,10 @@ export function toPublicProject(row: ProjectRow): PublicProject {
     name: row.name,
     developer: row.developer,
     city: row.city,
-    description: row.description,
-    highlight_text: row.highlight_text,
-    image_url: row.image_url,
-    learn_more_url: row.learn_more_url,
+    description: row.description || '',
+    highlight_text: row.highlight_text || '',
+    image_url: row.image_url || '',
+    learn_more_url: row.learn_more_url || '',
     is_visible: !!row.is_visible,
     booking_enabled: !!row.booking_enabled,
     payment_enabled: !!row.payment_enabled,
@@ -37,29 +34,36 @@ export function toPublicProject(row: ProjectRow): PublicProject {
   };
 }
 
-export function listVisibleProjects(): PublicProject[] {
-  const rows = getDb()
-    .prepare(`SELECT * FROM projects WHERE is_visible = 1 ORDER BY display_order ASC, id ASC`)
-    .all() as ProjectRow[];
-  return rows.map(toPublicProject);
+export async function listVisibleProjects(): Promise<PublicProject[]> {
+  await ensureSchema();
+  const result = await getDb().execute(
+    `SELECT * FROM projects WHERE is_visible = 1 ORDER BY display_order ASC, id ASC`
+  );
+  return rowsAs<ProjectRow>(result).map(toPublicProject);
 }
 
-export function listAllProjects(): ProjectRow[] {
-  return getDb()
-    .prepare(`SELECT * FROM projects ORDER BY display_order ASC, id ASC`)
-    .all() as ProjectRow[];
+export async function listAllProjects(): Promise<ProjectRow[]> {
+  await ensureSchema();
+  const result = await getDb().execute(
+    `SELECT * FROM projects ORDER BY display_order ASC, id ASC`
+  );
+  return rowsAs<ProjectRow>(result);
 }
 
-export function getProjectBySlug(slug: string): ProjectRow | null {
-  const row = getDb().prepare(`SELECT * FROM projects WHERE slug = ?`).get(slug) as
-    | ProjectRow
-    | undefined;
-  return row || null;
+export async function getProjectBySlug(slug: string): Promise<ProjectRow | null> {
+  await ensureSchema();
+  const result = await getDb().execute({
+    sql: `SELECT * FROM projects WHERE slug = ?`,
+    args: [slug],
+  });
+  return (rowsAs<ProjectRow>(result)[0]) || null;
 }
 
-export function getProjectById(id: number): ProjectRow | null {
-  const row = getDb().prepare(`SELECT * FROM projects WHERE id = ?`).get(id) as
-    | ProjectRow
-    | undefined;
-  return row || null;
+export async function getProjectById(id: number): Promise<ProjectRow | null> {
+  await ensureSchema();
+  const result = await getDb().execute({
+    sql: `SELECT * FROM projects WHERE id = ?`,
+    args: [id],
+  });
+  return (rowsAs<ProjectRow>(result)[0]) || null;
 }

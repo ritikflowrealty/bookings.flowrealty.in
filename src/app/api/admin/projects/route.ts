@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import { ensureSchema, getDb } from '@/lib/db';
 import { listAllProjects } from '@/lib/projects';
 import { guardAdmin } from '@/lib/guard';
 import { sanitizeText } from '@/lib/validation';
@@ -9,16 +9,18 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-  const denied = guardAdmin(req);
+  const denied = await guardAdmin(req);
   if (denied) return denied;
-  return NextResponse.json({ ok: true, projects: listAllProjects() });
+  const projects = await listAllProjects();
+  return NextResponse.json({ ok: true, projects });
 }
 
 export async function POST(req: NextRequest) {
-  const denied = guardAdmin(req);
+  const denied = await guardAdmin(req);
   if (denied) return denied;
 
   try {
+    await ensureSchema();
     const body = await req.json();
     const name = sanitizeText(body.name, 120);
     const developer = sanitizeText(body.developer, 120);
@@ -38,19 +40,17 @@ export async function POST(req: NextRequest) {
     const razorpay_key_secret = sanitizeText(body.razorpay_key_secret, 200);
 
     const db = getDb();
-    const max =
-      (db.prepare('SELECT MAX(display_order) as m FROM projects').get() as { m: number | null })
-        .m || 0;
+    const maxResult = await db.execute('SELECT MAX(display_order) as m FROM projects');
+    const maxRow = (maxResult.rows[0] as Record<string, unknown>) || {};
+    const max = Number(maxRow.m ?? 0);
 
-    const result = db
-      .prepare(
-        `INSERT INTO projects (
+    const result = await db.execute({
+      sql: `INSERT INTO projects (
           slug, name, developer, city, description, highlight_text, image_url, learn_more_url,
           razorpay_key_id, razorpay_key_secret, razorpay_active,
           is_visible, booking_enabled, payment_enabled, display_order
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, ?)`
-      )
-      .run(
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, ?) RETURNING id`,
+      args: [
         slug,
         name,
         developer,
@@ -62,10 +62,12 @@ export async function POST(req: NextRequest) {
         razorpay_key_id,
         razorpay_key_secret,
         razorpay_key_id && razorpay_key_secret ? 1 : 0,
-        max + 1
-      );
-    audit('admin.project_created', { id: result.lastInsertRowid, slug });
-    return NextResponse.json({ ok: true, id: result.lastInsertRowid });
+        max + 1,
+      ],
+    });
+    const id = Number((result.rows[0] as Record<string, unknown>)?.id ?? 0);
+    await audit('admin.project_created', { id, slug });
+    return NextResponse.json({ ok: true, id });
   } catch (err: any) {
     if (String(err?.message || '').includes('UNIQUE')) {
       return NextResponse.json({ ok: false, message: 'Slug already exists.' }, { status: 409 });

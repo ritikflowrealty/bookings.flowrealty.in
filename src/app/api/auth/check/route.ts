@@ -6,5 +6,6 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   const token = bearerFromHeader(req.headers.get('authorization'));
-  return NextResponse.json({ ok: isValidSession(token) });
+  const ok = await isValidSession(token);
+  return NextResponse.json({ ok });
 }

@@ -2,13 +2,13 @@
 
 A self-contained Next.js application for `booking.flowrealty.in`. Customers browse premium residential projects across Bengaluru, Mysuru, and beyond, and complete a provisional booking through a per-project Razorpay account. A password-protected admin panel lets the team manage projects, toggle visibility, and configure Razorpay credentials.
 
-The entire database lives inside the repo as schema and seed SQL. No Supabase, no external services besides Razorpay. The runtime database is a local SQLite file (gitignored) that any contributor or deploy target rebuilds automatically.
+The data layer uses [libSQL](https://turso.tech), a SQLite-compatible engine that runs as a local file in development and as a hosted database in production. The schema and seed data live in the repo (`db/schema.sql`, `db/seed.sql`) so any environment can rebuild itself.
 
 ## Tech Stack
 
-- **Next.js 14** (App Router, TypeScript)
+- **Next.js 15** (App Router, TypeScript)
 - **Tailwind CSS** for styling
-- **better-sqlite3** for an embedded zero-config database
+- **@libsql/client** for the database (works on Vercel, edge, and local file)
 - **Razorpay Node SDK** for orders and signature verification
 
 ## Project Layout
@@ -18,10 +18,10 @@ The entire database lives inside the repo as schema and seed SQL. No Supabase, n
 ├── db/
 │   ├── schema.sql        # tables, indexes, pragmas
 │   └── seed.sql          # 12 projects across 7 developers
-├── data/                 # SQLite file lives here at runtime (gitignored)
+├── data/                 # local SQLite file lives here in dev (gitignored)
 ├── scripts/
 │   ├── init-db.ts        # idempotent: applies schema + seed
-│   └── reset-db.ts       # destructive: wipes and reinitialises
+│   └── reset-db.ts       # destructive: wipes local file and re-inits
 ├── src/
 │   ├── app/              # routes + APIs
 │   ├── components/       # navbar, hero, tiles, footer
@@ -31,36 +31,48 @@ The entire database lives inside the repo as schema and seed SQL. No Supabase, n
 └── package.json
 ```
 
-## Quick Start
+## Quick Start (local)
 
 ```bash
-# 1. install dependencies
 npm install
-
-# 2. copy env
 cp .env.example .env.local
-# then edit .env.local — at minimum set ADMIN_PASSWORD
-
-# 3. init the database (idempotent)
+# edit .env.local — at minimum set ADMIN_PASSWORD
+# DATABASE_URL can stay blank for local file mode
 npm run db:init
-
-# 4. run dev server
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) for the customer site and [http://localhost:3000/admin](http://localhost:3000/admin) for the dashboard.
 
-The seed script preloads `Sipani City` with the test Razorpay keys so you can take a payment end-to-end immediately. Every other project is disabled until you set its credentials in the admin panel.
+The seed script preloads 12 projects. Sipani City is visible by default but disabled for booking until you add its Razorpay credentials in the admin panel.
+
+## Deploying to Vercel
+
+Vercel's filesystem is read-only, so a local SQLite file does not work in production. Use Turso (free tier is generous and SQLite-compatible).
+
+1. Sign up at [turso.tech](https://turso.tech) and create a database.
+2. Copy the libSQL URL (`libsql://<name>-<region>.turso.io`) and create an auth token.
+3. In Vercel project settings add three environment variables:
+   - `ADMIN_PASSWORD`
+   - `DATABASE_URL` = `libsql://<your-db>.turso.io`
+   - `DATABASE_AUTH_TOKEN` = the token from Turso
+4. Redeploy. The schema and seed are applied automatically on first request.
+
+You can also seed Turso once from your laptop:
+
+```bash
+DATABASE_URL=libsql://...turso.io DATABASE_AUTH_TOKEN=... npm run db:init
+```
 
 ## Environment Variables
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `ADMIN_PASSWORD` | yes | Verified server-side only. Never sent to the browser. |
-| `ADMIN_SESSION_SECRET` | recommended | Reserved for future signed cookies. |
-| `DATABASE_PATH` | no | Defaults to `./data/flow-realty.db`. |
+| `DATABASE_URL` | yes (prod) | libSQL URL. Use `libsql://...` in production. Blank in dev = local file. |
+| `DATABASE_AUTH_TOKEN` | yes (prod) | Auth token for the hosted libSQL instance. |
+| `DATABASE_PATH` | no | Local file path when `DATABASE_URL` is blank. Default `./data/flow-realty.db`. |
 | `NEXT_PUBLIC_SITE_URL` | no | Used in metadata, sitemap, OpenGraph. |
-| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | no | Optional global fallback. Per-project keys always override. |
 
 ## Admin Panel
 
@@ -87,30 +99,12 @@ Failures are recorded with retry counts. After 3 failures the form blocks furthe
 
 ## Security
 
-- HTTPS only (Vercel terminates TLS 1.2+).
+- HTTPS only (TLS 1.2+ enforced via HSTS).
 - Strict security headers configured in `next.config.js` (HSTS, X-Frame-Options DENY, no-sniff, referrer policy).
 - Inputs sanitized server-side (`sanitizeText` strips control characters and enforces max length).
 - Razorpay secrets never leave the server. The admin UI sends a new secret only when the user types one.
 - No card data is ever stored locally; Razorpay handles all card capture.
 - Audit logs include action, actor, IP, and details; pruned to 365 days.
-
-## Database Hosting
-
-This project uses SQLite, so the database is just a file on disk. There are two production approaches:
-
-1. **Single VM / container** — the `data/flow-realty.db` file persists in a mounted volume.
-2. **Vercel** — Vercel's filesystem is read-only and ephemeral. For Vercel deployment swap `getDb()` to point at [Turso](https://turso.tech/) (libSQL is SQLite-compatible) or [Cloudflare D1](https://developers.cloudflare.com/d1/). The schema and queries are unchanged.
-
-For your initial setup the local SQLite file works perfectly during development and on a Hetzner / Railway / Fly.io VM.
-
-## Deployment Checklist
-
-- [ ] Set `ADMIN_PASSWORD` in your hosting provider's environment variables.
-- [ ] Set `NEXT_PUBLIC_SITE_URL` to the production URL.
-- [ ] Mount a persistent volume for `./data` (or migrate to Turso).
-- [ ] Run `npm run db:init` once on first boot.
-- [ ] Configure Razorpay live keys per project from the admin panel.
-- [ ] Point your DNS for `booking.flowrealty.in` to the host.
 
 ## Scripts
 
@@ -120,8 +114,8 @@ For your initial setup the local SQLite file works perfectly during development 
 | `npm run build` | Production build |
 | `npm run start` | Start production server |
 | `npm run lint` | ESLint |
-| `npm run db:init` | Apply schema + seed (idempotent) |
-| `npm run db:reset` | **Destructive.** Wipe DB and re-seed. |
+| `npm run db:init` | Apply schema + seed (idempotent, works against any DATABASE_URL) |
+| `npm run db:reset` | **Destructive.** Wipes local file and re-seeds. Refuses on remote URLs. |
 
 ## License
 

@@ -1,41 +1,20 @@
 /**
- * Initializes the SQLite database from schema.sql + seed.sql.
- * Idempotent: safe to run multiple times.
+ * Initializes the libsql database from schema.sql + seed.sql.
+ * Idempotent: safe to run multiple times. Works for both local files
+ * (DATABASE_URL=file:./data/flow-realty.db) and Turso remote URLs.
  *
  * Usage: npm run db:init
  */
-import Database from 'better-sqlite3';
-import fs from 'node:fs';
-import path from 'node:path';
+import { ensureSchema, getDb } from '../src/lib/db';
 
-const DB_PATH = process.env.DATABASE_PATH || './data/flow-realty.db';
-const SCHEMA_PATH = path.join(process.cwd(), 'db', 'schema.sql');
-const SEED_PATH = path.join(process.cwd(), 'db', 'seed.sql');
-
-function ensureDir(filePath: string) {
-  const dir = path.dirname(filePath);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+async function main() {
+  await ensureSchema();
+  const r = await getDb().execute('SELECT COUNT(*) as c FROM projects');
+  const c = Number((r.rows[0] as Record<string, unknown>).c ?? 0);
+  console.log(`[init-db] ready. projects: ${c}`);
 }
 
-function main() {
-  ensureDir(DB_PATH);
-  const db = new Database(DB_PATH);
-
-  const schema = fs.readFileSync(SCHEMA_PATH, 'utf8');
-  db.exec(schema);
-  console.log('[init-db] schema applied');
-
-  const projectCount = db.prepare('SELECT COUNT(*) as c FROM projects').get() as { c: number };
-  if (projectCount.c === 0) {
-    const seed = fs.readFileSync(SEED_PATH, 'utf8');
-    db.exec(seed);
-    console.log('[init-db] seed data inserted');
-  } else {
-    console.log(`[init-db] ${projectCount.c} projects already exist, skipping seed`);
-  }
-
-  db.close();
-  console.log(`[init-db] database ready at ${DB_PATH}`);
-}
-
-main();
+main().catch((err) => {
+  console.error('[init-db] failed:', err);
+  process.exit(1);
+});

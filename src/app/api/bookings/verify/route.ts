@@ -19,13 +19,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, message: 'Missing fields.' }, { status: 400 });
     }
 
-    const booking = getBookingById(bookingId);
+    const booking = await getBookingById(bookingId);
     if (!booking) return NextResponse.json({ ok: false, message: 'Booking not found.' }, { status: 404 });
     if (booking.razorpay_order_id !== orderId) {
       return NextResponse.json({ ok: false, message: 'Order mismatch.' }, { status: 400 });
     }
 
-    const project = getProjectById(booking.project_id);
+    const project = await getProjectById(booking.project_id);
     if (!project || !project.razorpay_key_secret) {
       return NextResponse.json({ ok: false, message: 'Project not configured.' }, { status: 409 });
     }
@@ -37,13 +37,13 @@ export async function POST(req: NextRequest) {
       keySecret: project.razorpay_key_secret,
     });
     if (!valid) {
-      markFailed(bookingId, 'Invalid signature');
-      audit('booking.signature_invalid', { booking_id: bookingId });
+      await markFailed(bookingId, 'Invalid signature');
+      await audit('booking.signature_invalid', { booking_id: bookingId });
       return NextResponse.json({ ok: false, message: 'Invalid signature.' }, { status: 400 });
     }
 
-    markPaid(bookingId, paymentId, signature);
-    audit('booking.paid', {
+    await markPaid(bookingId, paymentId, signature);
+    await audit('booking.paid', {
       booking_id: bookingId,
       reference: booking.reference_number,
       payment_id: paymentId,
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {
-    audit('booking.verify_error', { message: err?.message || String(err) });
+    await audit('booking.verify_error', { message: err?.message || String(err) });
     return NextResponse.json({ ok: false, message: 'Verification failed.' }, { status: 500 });
   }
 }

@@ -1,112 +1,95 @@
-# Deployment Guide
+# Deployment Guide — Vercel + Turso
 
-This project is a single Next.js app with an embedded SQLite database. There is no Supabase, Firebase, or other external data store. The schema and seed data live in the repo (`db/schema.sql`, `db/seed.sql`) and the runtime database is a local file (`data/flow-realty.db`).
+This is the recommended setup. Vercel hosts the Next.js app. Turso hosts the database. Schema and seed live in the repo, so any environment can rebuild itself.
 
-## Where to host
+## 1. Create a Turso database (free)
 
-You have three viable options. Pick the one that matches your operational comfort.
+1. Sign up at [turso.tech](https://turso.tech).
+2. Install the CLI (optional) or use the web UI to create a database. Pick a region close to your users (Bangalore: `bom` or `ap-south-1` family).
+3. Copy two values:
+   - **Database URL** — looks like `libsql://flow-realty-<you>.turso.io`
+   - **Auth token** — long opaque string. Generate with the CLI (`turso db tokens create flow-realty`) or the dashboard.
 
-### Option 1 — Any VM (simplest)
+## 2. Add environment variables to Vercel
 
-Hetzner, Railway, Fly.io, DigitalOcean, AWS Lightsail, your own server. Works out of the box.
+In your Vercel project go to **Settings → Environment Variables** and add:
+
+| Name | Value |
+| --- | --- |
+| `ADMIN_PASSWORD` | a strong password you'll use to log into `/admin` |
+| `DATABASE_URL` | the `libsql://...` URL from Turso |
+| `DATABASE_AUTH_TOKEN` | the auth token from Turso |
+| `NEXT_PUBLIC_SITE_URL` | `https://booking.flowrealty.in` (or your Vercel URL until DNS is set) |
+
+Mark them for all environments (Production, Preview, Development) so previews work too.
+
+## 3. Redeploy
+
+Trigger a redeploy in Vercel. The first request to any page will:
+
+1. Connect to Turso.
+2. Apply `db/schema.sql` if the tables don't exist yet.
+3. Insert `db/seed.sql` if the projects table is empty.
+
+This means **you don't need to seed manually**. But if you'd like to, you can run from your laptop:
 
 ```bash
-git clone https://github.com/ritikflowrealty/bookings.flowrealty.in.git
-cd bookings.flowrealty.in
+DATABASE_URL=libsql://...turso.io DATABASE_AUTH_TOKEN=... npm run db:init
+```
+
+## 4. Sign in and configure projects
+
+- Open `https://your-vercel-url/admin`.
+- Sign in with `ADMIN_PASSWORD`.
+- For each project, paste the live Razorpay key id and secret, then turn on `Visible`, `Booking`, `Payment`.
+- Changes go live immediately.
+
+## 5. Connect your subdomain
+
+In Vercel: **Settings → Domains → Add** `booking.flowrealty.in`. Vercel will show the DNS record to add at your registrar (CNAME or A record). After DNS propagation Vercel issues a TLS certificate automatically.
+
+## Local Development
+
+```bash
+npm install
 cp .env.example .env.local
-# edit .env.local — at minimum set ADMIN_PASSWORD
-npm ci
+# leave DATABASE_URL blank to use a local SQLite file
+# set ADMIN_PASSWORD
 npm run db:init
-npm run build
-npm run start
+npm run dev
 ```
 
-Use a process manager like `pm2`, `systemd`, or your container runtime to keep the app alive. Mount or persist the `./data` directory so the SQLite file survives restarts.
+The local file lives at `data/flow-realty.db` and is gitignored.
 
-### Option 2 — Docker
+## Why Turso instead of Supabase or a VM
 
-A `Dockerfile` keeps things reproducible. Example:
+- Same SQL dialect as the local file. No code change between dev and prod.
+- Free tier handles thousands of bookings.
+- Reads are sub-millisecond from edge regions.
+- No connection pooling drama on Vercel cold starts.
+- One auth token, no schema migrations to babysit.
 
-```dockerfile
-FROM node:22-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN apk add --no-cache python3 make g++ && npm ci --omit=dev && apk del python3 make g++
-COPY . .
-RUN npm run build
-EXPOSE 3000
-VOLUME ["/app/data"]
-CMD ["sh", "-c", "npm run db:init && npm run start"]
-```
+## Backups
 
-### Option 3 — Vercel + Turso (if you must deploy serverless)
+Turso supports point-in-time backups in the dashboard. For extra safety, run a periodic `turso db dump` from a cron and store the SQL somewhere safe.
 
-Vercel's filesystem is read-only and ephemeral, so a local SQLite file does not work there. Swap to Turso (libSQL is SQLite-compatible) by changing `src/lib/db.ts` to use `@libsql/client`:
+## Switching providers later
+
+If you ever want to move off Turso, the schema and seed files in `db/` are plain SQLite SQL. Pick another libSQL host or a VM with `better-sqlite3`, point `DATABASE_URL` at it, and run `npm run db:init`.
+
+## Pushing to GitHub
 
 ```bash
-npm install @libsql/client
-```
-
-Then update `getDb()` to return the libsql client. The schema and queries do not change. Set `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` in Vercel environment variables.
-
-## Environment variables
-
-Set these in your hosting provider's environment variables panel. Never commit them.
-
-| Variable | Required | Purpose |
-| --- | --- | --- |
-| `ADMIN_PASSWORD` | yes | Admin panel password. Verified server-side, never exposed to the browser. |
-| `ADMIN_SESSION_SECRET` | recommended | Reserved for future signed cookies. Set to a 32+ char random string. |
-| `DATABASE_PATH` | no | Defaults to `./data/flow-realty.db`. |
-| `NEXT_PUBLIC_SITE_URL` | no | Used in metadata, sitemap, OpenGraph. |
-| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | no | Optional global fallback. Per-project keys always override. |
-
-## DNS
-
-Point `booking.flowrealty.in` at your host:
-
-- **VM / Docker host:** A record to the host IP, then put a TLS-terminating reverse proxy (Caddy, nginx, Traefik) in front.
-- **Vercel:** Add `booking.flowrealty.in` as a custom domain in the Vercel dashboard and update DNS as instructed.
-
-## First-run checklist
-
-1. Set `ADMIN_PASSWORD` in environment variables.
-2. Run `npm run db:init` once. This is idempotent. It applies the schema and seeds 12 projects.
-3. Visit `/admin`, sign in.
-4. Edit each project, paste the live Razorpay key id and secret, and toggle `Visible`, `Booking`, `Payment` on.
-5. Verify the project appears on the homepage and the Razorpay checkout opens at `/book/<slug>`.
-
-## Push to GitHub
-
-```bash
-git init
 git add .
-git commit -m "feat: initial flow realty bookings build"
-git branch -M main
-git remote add origin https://github.com/ritikflowrealty/bookings.flowrealty.in.git
-git push -u origin main
+git commit -m "feat: migrate to libsql for vercel"
+git push
 ```
 
-If you need a personal access token, generate one at [github.com/settings/tokens](https://github.com/settings/tokens) with `repo` scope, then push with:
-
-```
-git push https://<user>:<token>@github.com/ritikflowrealty/bookings.flowrealty.in.git main
-```
-
-## Database hygiene
-
-- Audit logs are auto-pruned to 365 days when `pruneOldAuditLogs()` is called. Wire this to a daily cron if you run on a long-lived VM.
-- Backups: copy `data/flow-realty.db` (and any `*.db-wal` / `*.db-shm` next to it) on a schedule. SQLite supports online backup via `sqlite3 source.db ".backup target.db"`.
-
-## Razorpay
-
-- Each project carries its own `razorpay_key_id` and `razorpay_key_secret`.
-- Booking and payment toggles are blocked at the API layer until both are saved.
-- Customer details (name, mobile, email, project, unit, address, pincode, reference number) are sent to Razorpay as `notes` on the order, so they appear in the Razorpay dashboard against every transaction.
+Vercel will auto-deploy on push if the GitHub integration is connected.
 
 ## Security recap
 
-- Admin password is server-side only. It never appears in client bundles.
+- Admin password is server-side only. Never bundled into the client.
 - TLS 1.2+ enforced via HSTS header.
 - `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, strict referrer policy.
 - All inputs sanitized server-side.

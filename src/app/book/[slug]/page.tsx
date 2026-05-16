@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function BookPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const row = getProjectBySlug(slug);
+  const row = await getProjectBySlug(slug);
   // 404 even with direct link if project is hidden or booking is closed
   if (!row || !row.is_visible || !row.booking_enabled) notFound();
 

@@ -4,7 +4,7 @@
  * Sessions are random tokens stored in admin_sessions table with 24h expiry.
  */
 import crypto from 'node:crypto';
-import { getDb } from './db';
+import { ensureSchema, getDb } from './db';
 
 const SESSION_TTL_HOURS = 24;
 const PUBLIC_PASSWORD_HINT = 'Set ADMIN_PASSWORD in your environment.';
@@ -21,43 +21,47 @@ export function verifyPassword(input: string): boolean {
   const a = Buffer.from(input || '', 'utf8');
   const b = Buffer.from(expected, 'utf8');
   if (a.length !== b.length) {
-    // Still do a comparison to keep timing similar
     crypto.timingSafeEqual(Buffer.alloc(b.length), Buffer.alloc(b.length));
     return false;
   }
   return crypto.timingSafeEqual(a, b);
 }
 
-export function createSession(ipAddress = ''): { token: string; expiresAt: string } {
+export async function createSession(ipAddress = ''): Promise<{ token: string; expiresAt: string }> {
+  await ensureSchema();
   const token = crypto.randomBytes(32).toString('hex');
   const expiresAt = new Date(Date.now() + SESSION_TTL_HOURS * 3600 * 1000).toISOString();
 
   const db = getDb();
-  db.prepare(
-    `INSERT INTO admin_sessions (token, expires_at, ip_address) VALUES (?, ?, ?)`
-  ).run(token, expiresAt, ipAddress);
+  await db.execute({
+    sql: `INSERT INTO admin_sessions (token, expires_at, ip_address) VALUES (?, ?, ?)`,
+    args: [token, expiresAt, ipAddress],
+  });
 
   // Garbage-collect expired sessions opportunistically
-  db.prepare(`DELETE FROM admin_sessions WHERE expires_at < datetime('now')`).run();
+  await db.execute(`DELETE FROM admin_sessions WHERE expires_at < datetime('now')`);
 
   return { token, expiresAt };
 }
 
-export function isValidSession(token: string | undefined | null): boolean {
+export async function isValidSession(token: string | undefined | null): Promise<boolean> {
   if (!token) return false;
+  await ensureSchema();
   const db = getDb();
-  const row = db
-    .prepare(
-      `SELECT token FROM admin_sessions WHERE token = ? AND expires_at > datetime('now')`
-    )
-    .get(token);
-  return !!row;
+  const result = await db.execute({
+    sql: `SELECT token FROM admin_sessions WHERE token = ? AND expires_at > datetime('now')`,
+    args: [token],
+  });
+  return result.rows.length > 0;
 }
 
-export function destroySession(token: string): void {
+export async function destroySession(token: string): Promise<void> {
   if (!token) return;
   const db = getDb();
-  db.prepare(`DELETE FROM admin_sessions WHERE token = ?`).run(token);
+  await db.execute({
+    sql: `DELETE FROM admin_sessions WHERE token = ?`,
+    args: [token],
+  });
 }
 
 /**
