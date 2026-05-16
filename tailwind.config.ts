@@ -25,8 +25,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['var(--font-instrument)', 'system-ui', 'sans-serif'],
-        display: ['var(--font-fraunces)', 'Georgia', 'serif'],
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'Georgia', 'serif'],
       },
       backgroundImage: {
         'neon-gradient':

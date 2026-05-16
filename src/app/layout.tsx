@@ -1,17 +1,17 @@
 import type { Metadata, Viewport } from 'next';
-import { Instrument_Sans, Fraunces } from 'next/font/google';
+import { Manrope, Fraunces } from 'next/font/google';
 import './globals.css';
 
-const instrument = Instrument_Sans({
+const manrope = Manrope({
   subsets: ['latin'],
-  variable: '--font-instrument',
+  variable: '--font-sans',
   weight: ['400', '500', '600', '700'],
   display: 'swap',
 });
 
 const fraunces = Fraunces({
   subsets: ['latin'],
-  variable: '--font-fraunces',
+  variable: '--font-display',
   weight: ['400', '500', '600', '700'],
   display: 'swap',
 });
@@ -61,7 +61,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${instrument.variable} ${fraunces.variable}`}>
+    <html lang="en" className={`${manrope.variable} ${fraunces.variable}`}>
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <script

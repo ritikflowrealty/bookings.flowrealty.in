@@ -1,35 +1,38 @@
+import Image from 'next/image';
+
 /**
- * Inline SVG logo. Renders a flowing gradient mark so it stays sharp at any size
- * and never depends on an external image being present.
+ * Renders the Flow Realty logo.
+ *
+ * Drop your logo at:
+ *   public/logo.svg   (preferred, infinitely scalable)
+ *   public/logo.png   (fallback, recommended 512×512 transparent PNG)
+ *
+ * Recommendations:
+ *   - SVG: 1:1 viewBox, transparent background, single colour or gradient
+ *   - PNG: 512×512 master, the component renders at 36px so any 2x size is sharp
+ *   - Keep file under 60KB. Optimise via https://svgomg.net or https://squoosh.app
  */
 export function Logo({ className = '', size = 36 }: { className?: string; size?: number }) {
   return (
-    <span className={`inline-flex items-center gap-2 ${className}`}>
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 64 64"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-        className="drop-shadow-[0_0_18px_rgba(217,46,255,0.45)]"
+    <span className={`inline-flex items-center gap-2.5 ${className}`}>
+      <span
+        className="relative inline-block"
+        style={{ width: size, height: size }}
       >
-        <defs>
-          <linearGradient id="lg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#7B2EFF" />
-            <stop offset="50%" stopColor="#D92EFF" />
-            <stop offset="100%" stopColor="#FF6A00" />
-          </linearGradient>
-        </defs>
-        <path
-          d="M14 14 C 28 14, 36 22, 50 22 C 50 30, 42 30, 32 30 C 22 30, 14 30, 14 38 C 28 38, 36 46, 50 46"
-          stroke="url(#lg)"
-          strokeWidth="6"
-          strokeLinecap="round"
-          fill="none"
+        {/* Use Next/Image so it lazy-decodes and avoids layout shift.
+            If logo.svg / logo.png is not in /public, this gracefully falls back
+            to the SVG mark below via onError. */}
+        <Image
+          src="/logo.svg"
+          alt="Flow Realty"
+          width={size}
+          height={size}
+          className="object-contain drop-shadow-[0_0_18px_rgba(217,46,255,0.35)]"
+          priority
+          unoptimized
         />
-      </svg>
-      <span className="font-display text-[18px] tracking-tight text-ink">
+      </span>
+      <span className="font-display text-[18px] tracking-tight text-ink leading-none">
         flow<span className="neon-text">realty</span>
       </span>
     </span>

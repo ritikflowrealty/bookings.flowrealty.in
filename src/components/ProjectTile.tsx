@@ -23,7 +23,7 @@ export function ProjectTile({ project, index }: { project: PublicProject; index:
     el.style.setProperty('--ry', '0deg');
   }
 
-  const bookingDisabled = !project.booking_enabled || !project.payment_enabled;
+  const bookingDisabled = !project.booking_enabled;
 
   return (
     <article
