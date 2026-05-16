@@ -1,40 +1,47 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 /**
- * Renders the Flow Realty logo.
+ * Brand logo. Reads /public/logo.png (1024×1024 square, transparent PNG).
  *
- * Drop your logo at:
- *   public/logo.svg   (preferred, infinitely scalable)
- *   public/logo.png   (fallback, recommended 512×512 transparent PNG)
- *
- * Recommendations:
- *   - SVG: 1:1 viewBox, transparent background, single colour or gradient
- *   - PNG: 512×512 master, the component renders at 36px so any 2x size is sharp
- *   - Keep file under 60KB. Optimise via https://svgomg.net or https://squoosh.app
+ * If you ever swap to SVG: drop logo.svg next to logo.png and change the src below.
  */
-export function Logo({ className = '', size = 36 }: { className?: string; size?: number }) {
-  return (
-    <span className={`inline-flex items-center gap-2.5 ${className}`}>
-      <span
-        className="relative inline-block"
-        style={{ width: size, height: size }}
-      >
-        {/* Use Next/Image so it lazy-decodes and avoids layout shift.
-            If logo.svg / logo.png is not in /public, this gracefully falls back
-            to the SVG mark below via onError. */}
-        <Image
-          src="/logo.svg"
-          alt="Flow Realty"
-          width={size}
-          height={size}
-          className="object-contain drop-shadow-[0_0_18px_rgba(217,46,255,0.35)]"
-          priority
-          unoptimized
-        />
-      </span>
-      <span className="font-display text-[18px] tracking-tight text-ink leading-none">
-        flow<span className="neon-text">realty</span>
+export function Logo({
+  className = '',
+  size = 38,
+  asLink = false,
+}: {
+  className?: string;
+  size?: number;
+  asLink?: boolean;
+}) {
+  const img = (
+    <Image
+      src="/logo.png"
+      alt="Flow Realty"
+      width={size * 2}
+      height={size * 2}
+      sizes={`${size}px`}
+      style={{ width: size, height: size }}
+      className="object-contain drop-shadow-[0_0_22px_rgba(217,46,255,0.35)]"
+      priority
+    />
+  );
+
+  const inner = (
+    <span className={`inline-flex items-center ${className}`}>
+      <span className="relative inline-block" style={{ width: size, height: size }}>
+        {img}
       </span>
     </span>
   );
+
+  if (asLink) {
+    return (
+      <Link href="/" aria-label="Flow Realty home" className="inline-flex items-center">
+        {inner}
+      </Link>
+    );
+  }
+  return inner;
 }

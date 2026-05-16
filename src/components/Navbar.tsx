@@ -28,7 +28,7 @@ export function Navbar() {
     >
       <div className="mx-auto max-w-7xl px-5 lg:px-8 h-[72px] flex items-center justify-between">
         <Link href="/" className="flex items-center" aria-label="Flow Realty">
-          <Logo />
+          <Logo size={42} />
         </Link>
 
         <nav className="hidden md:flex items-center gap-2">
