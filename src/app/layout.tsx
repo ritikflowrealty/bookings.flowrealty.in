@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     template: '%s | Flow Realty',
   },
   description:
-    'Reserve your home in seconds. Curated residential projects across Bangalore, Mysore, and Bhubaneswar from South India\'s leading developers.',
+    'Reserve your home in seconds. Curated residential projects across Bangalore, Mysore, and Bhubaneswar from India\'s leading developers.',
   keywords: [
     'Flow Realty',
     'Bangalore real estate',

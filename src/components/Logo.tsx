@@ -22,7 +22,7 @@ export function Logo({
   const inner = (
     <span className={`inline-flex items-center ${className}`}>
       <Image
-        src="/logo.png"
+        src="/logo.svg"
         alt="Flow Realty"
         width={w * 2}
         height={height * 2}
