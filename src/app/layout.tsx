@@ -73,7 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               name: 'Flow Realty',
               url: SITE_URL,
               description:
-                'Sales outsourcing partner for premium residential developers in South India.',
+                'Sales outsourcing partner for premium residential developers across India.',
               areaServed: ['Bangalore', 'Mysore', 'Bhubaneswar', 'Hyderabad'],
               address: {
                 '@type': 'PostalAddress',

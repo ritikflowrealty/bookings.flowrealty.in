@@ -21,21 +21,21 @@ export function Hero() {
       <div aria-hidden="true" className="absolute inset-0 grid-bg" />
 
       <div className="relative mx-auto max-w-7xl px-5 lg:px-8 pt-20 lg:pt-28 pb-16">
-        <h1 className="font-display text-[44px] sm:text-6xl lg:text-7xl leading-[1.02] tracking-tight">
+        <h1 className="font-display text-[44px] sm:text-6xl lg:text-7xl leading-[1.02] tracking-tight reveal">
           The address you have
           <br />
           been waiting for.
           <br />
           <span className="neon-text">Yours, in a tap.</span>
         </h1>
-        <p className="mt-6 max-w-xl text-base sm:text-lg text-ink-muted leading-relaxed">
-          Hand-picked homes from South India&rsquo;s most respected developers. Reserve the unit
+        <p className="mt-6 max-w-xl text-base sm:text-lg text-ink-muted leading-relaxed reveal-delayed">
+          Hand-picked homes from India&rsquo;s most respected developers. Reserve the unit
           you love today. Our sales team takes it from there.
         </p>
 
-        <div className="mt-9 flex flex-wrap items-center gap-3">
-          <a href="#projects" className="btn-neon">See available homes</a>
-          <a href="#why" className="btn-ghost">Why Flow Realty</a>
+        <div className="mt-9 flex flex-wrap items-center gap-3 reveal-delayed" style={{ animationDelay: '240ms' }}>
+          <a href="#projects" className="btn-neon transition-transform duration-300 hover:scale-105 active:scale-95">See available homes</a>
+          <a href="#why" className="btn-ghost transition-transform duration-300 hover:scale-105 active:scale-95">Why Flow Realty</a>
         </div>
       </div>
     </section>

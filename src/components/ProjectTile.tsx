@@ -44,7 +44,7 @@ export function ProjectTile({ project, index }: { project: PublicProject; index:
 
   return (
     <article
-      className="group relative h-full"
+      className="group relative h-full reveal"
       onMouseMove={onMouseMove}
       onMouseLeave={onLeave}
       style={{ animationDelay: `${index * 80}ms` }}

@@ -7,7 +7,7 @@ export function Footer() {
         <div>
           <Logo />
           <p className="mt-4 text-sm text-ink-muted leading-relaxed max-w-sm">
-            Curated homes from South India&rsquo;s leading developers. Reserve in seconds, with our
+            Curated homes from India&rsquo;s leading developers. Reserve in seconds, with our
             sales team on the line every step of the way.
           </p>
         </div>

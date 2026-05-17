@@ -10,9 +10,9 @@ export function AboutContact() {
               The quiet partner behind your favourite addresses.
             </h2>
             <p className="mt-5 text-ink-muted leading-relaxed">
-              Flow Realty is one of South India&rsquo;s largest real-estate sales partners. We work
+              Flow Realty is one of India&rsquo;s largest real-estate sales partners. We work
               alongside developers to bring their best projects to life and to the families who
-              deserve them. Over the last four years that work has translated into more than
+              deserve them. Over the last five years that work has translated into more than
               ₹3,500 Cr in residential sales across Bangalore, Mysore, and Bhubaneswar.
             </p>
             <p className="mt-3 text-ink-muted leading-relaxed">

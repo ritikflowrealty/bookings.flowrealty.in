@@ -5,7 +5,7 @@ const items = [
   },
   {
     title: 'Backed by performance',
-    body: 'Over ₹3,500 Cr in residential sales delivered in the last four years. The projects we list are projects that move. The developers we work with deliver.',
+    body: 'Over ₹3,500 Cr in residential sales delivered in the last five years. The projects we list are projects that move. The developers we work with deliver.',
   },
   {
     title: 'Reserve in seconds',
@@ -44,7 +44,8 @@ export function WhyChooseUs() {
           {items.map((it, i) => (
             <div
               key={it.title}
-              className="glass rounded-2xl p-6 md:p-7 hover:bg-white/[0.06] transition-colors h-full flex flex-col"
+              className="glass rounded-2xl p-6 md:p-7 hover:bg-white/[0.06] hover:-translate-y-0.5 transition-all duration-300 h-full flex flex-col reveal"
+              style={{ animationDelay: `${i * 70}ms` }}
             >
               <span
                 className="inline-flex items-center justify-center w-9 h-9 rounded-xl text-xs font-semibold mb-4"

@@ -14,7 +14,7 @@ export default function PrivacyPage() {
         <p className="mt-2 text-ink-muted">Last updated: {new Date().toLocaleDateString('en-IN')}</p>
 
         <Section title="Who we are">
-          Flow Realty is a sales partner for premium residential developers across South India. This
+          Flow Realty is a sales partner for premium residential developers across India. This
           page explains what we collect when you book a unit on booking.flowrealty.in and how we
           protect that information.
         </Section>
