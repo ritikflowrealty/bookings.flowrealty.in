@@ -22,11 +22,11 @@ export function Hero() {
       />
       <div aria-hidden="true" className="absolute inset-0 grid-bg" />
 
-      <div className="relative mx-auto max-w-7xl px-5 lg:px-8 pt-20 lg:pt-28 pb-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
+      <div className="relative mx-auto max-w-7xl px-5 lg:px-8 pt-8 lg:pt-14 pb-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left: copy */}
           <div>
-            <h1 className="font-display text-[44px] sm:text-6xl lg:text-7xl leading-[1.02] tracking-tight reveal">
+            <h1 className="font-display text-[38px] sm:text-5xl lg:text-7xl leading-[1.02] tracking-tight reveal">
               The address you have
               <br />
               been waiting for.
@@ -58,7 +58,7 @@ export function Hero() {
           </div>
 
           {/* Right: building image with lights toggle */}
-          <div className="relative reveal-delayed hidden md:block" style={{ animationDelay: '300ms' }}>
+          <div className="relative reveal-delayed" style={{ animationDelay: '300ms' }}>
             <HeroBuilding />
           </div>
         </div>
