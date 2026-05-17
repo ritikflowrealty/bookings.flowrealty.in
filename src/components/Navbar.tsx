@@ -4,7 +4,8 @@ import { Logo } from './Logo';
 import { useEffect, useState } from 'react';
 
 const links = [
-  { href: '#projects', label: 'Homes' },
+  { href: '#', label: 'Home' },
+  { href: '#projects', label: 'Projects' },
   { href: '#why', label: 'Why Choose Us' },
 ];
 
