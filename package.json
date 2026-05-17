@@ -12,7 +12,6 @@
     "db:reset": "tsx scripts/reset-db.ts"
   },
   "dependencies": {
-    "@google/model-viewer": "^4.2.0",
     "@libsql/client": "^0.14.0",
     "framer-motion": "^11.11.17",
     "lucide-react": "^0.460.0",
