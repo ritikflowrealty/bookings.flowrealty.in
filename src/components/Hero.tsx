@@ -58,7 +58,7 @@ export function Hero() {
           </div>
 
           {/* Right: 3D building */}
-          <div className="relative reveal-delayed hidden md:block" style={{ animationDelay: '300ms' }}>
+          <div className="relative reveal-delayed hidden md:block max-h-[460px]" style={{ animationDelay: '300ms' }}>
             <Building3D />
           </div>
         </div>
