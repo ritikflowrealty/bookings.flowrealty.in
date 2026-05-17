@@ -37,7 +37,7 @@ export function toPublicProject(row: ProjectRow): PublicProject {
 export async function listVisibleProjects(): Promise<PublicProject[]> {
   await ensureSchema();
   const result = await getDb().execute(
-    `SELECT * FROM projects WHERE is_visible = 1 ORDER BY display_order ASC, id ASC`
+    `SELECT * FROM projects WHERE is_visible = 1 ORDER BY name ASC`
   );
   return rowsAs<ProjectRow>(result).map(toPublicProject);
 }
