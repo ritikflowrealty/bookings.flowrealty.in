@@ -55,7 +55,7 @@ export function Navbar() {
             href="#contact"
             className="btn-neon ml-3 text-sm py-2.5 transition-transform duration-300 hover:scale-105 active:scale-95"
           >
-            Contact
+            Contact Us
           </a>
         </nav>
 
@@ -95,7 +95,7 @@ export function Navbar() {
               onClick={() => setOpen(false)}
               className="btn-neon mt-2 transition-transform duration-300 active:scale-95"
             >
-              Contact
+              Contact Us
             </a>
           </div>
         </div>

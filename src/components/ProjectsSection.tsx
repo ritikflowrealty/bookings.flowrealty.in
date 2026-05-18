@@ -19,7 +19,7 @@ export function ProjectsSection({ projects }: { projects: PublicProject[] }) {
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="flex items-end justify-between gap-6 flex-wrap">
           <div className="max-w-xl">
-            <span className="chip">Live Projects</span>
+            <span className="chip">Projects</span>
             <h2 className="mt-4 font-display text-4xl sm:text-5xl tracking-tight">
               Homes our families call their own.
             </h2>

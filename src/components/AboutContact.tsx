@@ -5,7 +5,7 @@ export function AboutContact() {
         {/* About */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           <div className="lg:col-span-7">
-            <span className="chip">About Flow Realty</span>
+            <span className="chip">Contact Us</span>
             <h2 className="mt-4 font-display text-4xl sm:text-5xl tracking-tight">
               The quiet partner behind your favourite addresses.
             </h2>

@@ -52,7 +52,7 @@ export function Hero() {
                 href="#why"
                 className="btn-ghost transition-transform duration-300 hover:scale-105 active:scale-95"
               >
-                Why Flow Realty
+                Why Choose Us
               </a>
             </div>
           </div>

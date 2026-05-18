@@ -30,7 +30,7 @@ export function WhyChooseUs() {
     <section id="why" className="relative py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="max-w-2xl">
-          <span className="chip">Why Flow Realty</span>
+          <span className="chip">Why Choose Us</span>
           <h2 className="mt-4 font-display text-4xl sm:text-5xl tracking-tight">
             Where serious buyers find serious homes.
           </h2>
