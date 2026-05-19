@@ -4,9 +4,9 @@ import { Logo } from './Logo';
 import { useEffect, useState } from 'react';
 
 const links = [
-  { href: '#', label: 'Home' },
-  { href: '#projects', label: 'Projects' },
-  { href: '#why', label: 'Why Choose Us' },
+  { href: '/#', label: 'Home' },
+  { href: '/#projects', label: 'Projects' },
+  { href: '/#why', label: 'Why Choose Us' },
 ];
 
 export function Navbar() {
@@ -52,7 +52,7 @@ export function Navbar() {
             </a>
           ))}
           <a
-            href="#contact"
+            href="/#contact"
             className="btn-neon ml-3 text-sm py-2.5 transition-transform duration-300 hover:scale-105 active:scale-95"
           >
             Contact Us
@@ -91,7 +91,7 @@ export function Navbar() {
               </a>
             ))}
             <a
-              href="#contact"
+              href="/#contact"
               onClick={() => setOpen(false)}
               className="btn-neon mt-2 transition-transform duration-300 active:scale-95"
             >

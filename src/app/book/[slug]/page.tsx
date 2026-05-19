@@ -69,31 +69,33 @@ export default async function BookPage({ params }: { params: Promise<{ slug: str
                 <p className="mt-5 text-sm text-ink-muted leading-relaxed">{project.description}</p>
               )}
 
-              {/* Brochure download */}
-              {project.brochure_url && (
-                <a
-                  href={project.brochure_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-4 inline-flex items-center gap-2 btn-ghost text-sm"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  Download Brochure
-                </a>
-              )}
-
-              {/* Learn more */}
-              {project.learn_more_url && (
-                <a
-                  href={project.learn_more_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-2 btn-ghost text-sm"
-                >
-                  Learn More
-                </a>
+              {/* Action buttons */}
+              {(project.brochure_url || project.learn_more_url) && (
+                <div className="mt-5 flex flex-col sm:flex-row items-start gap-3">
+                  {project.brochure_url && (
+                    <a
+                      href={project.brochure_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-ghost text-sm inline-flex items-center gap-2"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      Download Brochure
+                    </a>
+                  )}
+                  {project.learn_more_url && (
+                    <a
+                      href={project.learn_more_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-ghost text-sm inline-flex items-center gap-2"
+                    >
+                      Learn More
+                    </a>
+                  )}
+                </div>
               )}
 
               {/* Trust points */}

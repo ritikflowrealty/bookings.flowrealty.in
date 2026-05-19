@@ -148,19 +148,6 @@ export function ProjectTile({ project, index }: { project: PublicProject; index:
         </div>
       </Link>
 
-      {/* Learn More: separate sibling anchor, sits above the card link */}
-      {project.learn_more_url && (
-        <a
-          href={project.learn_more_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="absolute right-6 bottom-6 btn-ghost text-xs px-4 py-2"
-          style={{ touchAction: 'manipulation' }}
-        >
-          Learn More
-        </a>
-      )}
     </article>
   );
 }
