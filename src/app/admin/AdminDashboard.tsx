@@ -16,9 +16,18 @@ type AdminProject = {
   highlight_text: string;
   image_url: string;
   learn_more_url: string;
+  brochure_url: string;
+  trust_point_1: string;
+  trust_point_2: string;
+  trust_point_3: string;
   razorpay_key_id: string;
-  razorpay_key_secret: string; // server returns the stored value but we never display it raw
+  razorpay_key_secret: string;
   razorpay_active: number;
+  cashfree_app_id: string;
+  cashfree_secret_key: string;
+  cashfree_active: number;
+  cashfree_mode: string;
+  payment_provider: string;
   is_visible: number;
   booking_enabled: number;
   payment_enabled: number;
@@ -179,8 +188,10 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                     <h3 className="mt-1 font-display text-xl">{p.name}</h3>
                     <p className="text-xs text-ink-dim mt-0.5">/{p.slug}</p>
                   </div>
-                  {p.razorpay_active ? (
-                    <span className="chip text-emerald-300 border-emerald-300/20">Razorpay set</span>
+                  {p.razorpay_active || p.cashfree_active ? (
+                    <span className="chip text-emerald-300 border-emerald-300/20">
+                      {p.payment_provider === 'cashfree' ? 'Cashfree' : 'Razorpay'}
+                    </span>
                   ) : (
                     <span className="chip text-amber-300 border-amber-300/20">No keys</span>
                   )}
@@ -196,13 +207,13 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                     label="Booking"
                     value={!!p.booking_enabled}
                     onChange={(v) => toggle(p.id, 'booking_enabled', v)}
-                    disabled={!p.razorpay_active}
+                    disabled={!(p.razorpay_active || p.cashfree_active)}
                   />
                   <Toggle
                     label="Payment"
                     value={!!p.payment_enabled}
                     onChange={(v) => toggle(p.id, 'payment_enabled', v)}
-                    disabled={!p.razorpay_active}
+                    disabled={!(p.razorpay_active || p.cashfree_active)}
                   />
                 </div>
 

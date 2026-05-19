@@ -10,10 +10,25 @@ export const dynamic = 'force-dynamic';
 export default async function BookPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const row = await getProjectBySlug(slug);
-  // 404 even with direct link if project is hidden or booking is closed
   if (!row || !row.is_visible || !row.booking_enabled) notFound();
 
   const project = toPublicProject(row);
+
+  const trustPoints = [
+    project.trust_point_1,
+    project.trust_point_2,
+    project.trust_point_3,
+  ].filter(Boolean);
+
+  // Default trust points if admin hasn't set any
+  const displayTrustPoints =
+    trustPoints.length > 0
+      ? trustPoints
+      : [
+          `Reserve through verified ${project.payment_provider === 'cashfree' ? 'Cashfree' : 'Razorpay'} checkout`,
+          'Sales team reaches out within 24 hours',
+          'Site visit, paperwork, and possession handled end-to-end',
+        ];
 
   return (
     <>
@@ -53,10 +68,39 @@ export default async function BookPage({ params }: { params: Promise<{ slug: str
               {project.description && (
                 <p className="mt-5 text-sm text-ink-muted leading-relaxed">{project.description}</p>
               )}
+
+              {/* Brochure download */}
+              {project.brochure_url && (
+                <a
+                  href={project.brochure_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex items-center gap-2 btn-ghost text-sm"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  Download Brochure
+                </a>
+              )}
+
+              {/* Learn more */}
+              {project.learn_more_url && (
+                <a
+                  href={project.learn_more_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center gap-2 btn-ghost text-sm"
+                >
+                  Learn More
+                </a>
+              )}
+
+              {/* Trust points */}
               <ul className="mt-6 space-y-2 text-sm text-ink-muted">
-                <li>• Reserve through verified Razorpay checkout</li>
-                <li>• Sales team reaches out within 24 hours</li>
-                <li>• Site visit, paperwork, and possession handled end-to-end</li>
+                {displayTrustPoints.map((point, i) => (
+                  <li key={i}>• {point}</li>
+                ))}
               </ul>
             </aside>
 

@@ -10,6 +10,11 @@ export type PublicProject = {
   highlight_text: string;
   image_url: string;
   learn_more_url: string;
+  brochure_url: string;
+  trust_point_1: string;
+  trust_point_2: string;
+  trust_point_3: string;
+  payment_provider: string;
   is_visible: boolean;
   booking_enabled: boolean;
   payment_enabled: boolean;
@@ -27,6 +32,11 @@ export function toPublicProject(row: ProjectRow): PublicProject {
     highlight_text: row.highlight_text || '',
     image_url: row.image_url || '',
     learn_more_url: row.learn_more_url || '',
+    brochure_url: row.brochure_url || '',
+    trust_point_1: row.trust_point_1 || '',
+    trust_point_2: row.trust_point_2 || '',
+    trust_point_3: row.trust_point_3 || '',
+    payment_provider: row.payment_provider || 'razorpay',
     is_visible: !!row.is_visible,
     booking_enabled: !!row.booking_enabled,
     payment_enabled: !!row.payment_enabled,

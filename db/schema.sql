@@ -23,6 +23,21 @@ CREATE TABLE IF NOT EXISTS projects (
   razorpay_key_secret TEXT DEFAULT '',
   razorpay_active INTEGER NOT NULL DEFAULT 0,
 
+  -- Cashfree credentials per project
+  cashfree_app_id TEXT DEFAULT '',
+  cashfree_secret_key TEXT DEFAULT '',
+  cashfree_active INTEGER NOT NULL DEFAULT 0,
+  cashfree_mode TEXT DEFAULT 'test',
+
+  -- Which provider this project uses ('razorpay' | 'cashfree')
+  payment_provider TEXT NOT NULL DEFAULT 'razorpay',
+
+  -- Project page extras (admin editable)
+  brochure_url TEXT DEFAULT '',
+  trust_point_1 TEXT DEFAULT '',
+  trust_point_2 TEXT DEFAULT '',
+  trust_point_3 TEXT DEFAULT '',
+
   -- Three independent toggles
   is_visible INTEGER NOT NULL DEFAULT 0,
   booking_enabled INTEGER NOT NULL DEFAULT 0,

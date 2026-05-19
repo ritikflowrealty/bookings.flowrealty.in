@@ -12,12 +12,16 @@ type Editable = {
   highlight_text: string;
   image_url: string;
   learn_more_url: string;
+  brochure_url: string;
+  trust_point_1: string;
+  trust_point_2: string;
+  trust_point_3: string;
+  payment_provider: string;
   razorpay_key_id: string;
-  // We only ever send a new secret on save; never display existing one.
   razorpay_key_secret_new: string;
-  is_visible?: number;
-  booking_enabled?: number;
-  payment_enabled?: number;
+  cashfree_app_id: string;
+  cashfree_secret_key_new: string;
+  cashfree_mode: string;
 };
 
 const empty: Editable = {
@@ -29,8 +33,16 @@ const empty: Editable = {
   highlight_text: '',
   image_url: '',
   learn_more_url: '',
+  brochure_url: '',
+  trust_point_1: '',
+  trust_point_2: '',
+  trust_point_3: '',
+  payment_provider: 'razorpay',
   razorpay_key_id: '',
   razorpay_key_secret_new: '',
+  cashfree_app_id: '',
+  cashfree_secret_key_new: '',
+  cashfree_mode: 'test',
 };
 
 export function ProjectEditor({
@@ -56,8 +68,16 @@ export function ProjectEditor({
           highlight_text: project.highlight_text || '',
           image_url: project.image_url || '',
           learn_more_url: project.learn_more_url || '',
+          brochure_url: project.brochure_url || '',
+          trust_point_1: project.trust_point_1 || '',
+          trust_point_2: project.trust_point_2 || '',
+          trust_point_3: project.trust_point_3 || '',
+          payment_provider: project.payment_provider || 'razorpay',
           razorpay_key_id: project.razorpay_key_id || '',
           razorpay_key_secret_new: '',
+          cashfree_app_id: project.cashfree_app_id || '',
+          cashfree_secret_key_new: '',
+          cashfree_mode: project.cashfree_mode || 'test',
         }
       : empty
   );
@@ -88,11 +108,20 @@ export function ProjectEditor({
         highlight_text: form.highlight_text,
         image_url: form.image_url,
         learn_more_url: form.learn_more_url,
+        brochure_url: form.brochure_url,
+        trust_point_1: form.trust_point_1,
+        trust_point_2: form.trust_point_2,
+        trust_point_3: form.trust_point_3,
+        payment_provider: form.payment_provider,
         razorpay_key_id: form.razorpay_key_id,
+        cashfree_app_id: form.cashfree_app_id,
+        cashfree_mode: form.cashfree_mode,
       };
-      // Only send new secret if user typed one; otherwise server keeps the stored one.
       if (form.razorpay_key_secret_new) {
         payload.razorpay_key_secret = form.razorpay_key_secret_new;
+      }
+      if (form.cashfree_secret_key_new) {
+        payload.cashfree_secret_key = form.cashfree_secret_key_new;
       }
 
       let url = '/api/admin/projects';
@@ -102,9 +131,6 @@ export function ProjectEditor({
         method = 'PUT';
       } else {
         payload.slug = form.slug;
-        // For new projects, require both key + secret to allow enabling later
-        if (form.razorpay_key_secret_new)
-          payload.razorpay_key_secret = form.razorpay_key_secret_new;
       }
 
       const r = await fetch(url, { method, headers: authHeader(), body: JSON.stringify(payload) });
@@ -130,7 +156,7 @@ export function ProjectEditor({
               {form.id ? 'Edit project' : 'Add project'}
             </h2>
             <p className="text-xs text-ink-muted">
-              Changes save instantly and reflect on the booking page within 60 seconds.
+              Changes reflect on the booking page within 60 seconds.
             </p>
           </div>
           <button onClick={onClose} className="btn-ghost text-sm">Cancel</button>
@@ -160,7 +186,7 @@ export function ProjectEditor({
             label="Image URL"
             value={form.image_url}
             onChange={(v) => set('image_url', v)}
-            hint="Recommended 1200×800px, < 300KB, JPG/PNG/WebP"
+            hint="Recommended 1200x800px, < 300KB, JPG/PNG/WebP"
             full
           />
           <Input
@@ -168,29 +194,120 @@ export function ProjectEditor({
             value={form.learn_more_url}
             onChange={(v) => set('learn_more_url', v)}
             hint="Optional, opens in a new tab"
-            full
+          />
+          <Input
+            label="Brochure Download URL"
+            value={form.brochure_url}
+            onChange={(v) => set('brochure_url', v)}
+            hint="PDF link. Shows download button on project page."
           />
 
+          {/* Trust points */}
           <div className="sm:col-span-2 mt-2 pt-4 border-t border-white/10">
-            <p className="label">Razorpay credentials (per project)</p>
+            <p className="label">Project page trust points (editable)</p>
             <p className="text-xs text-ink-dim mt-1">
-              Booking and payment toggles can only be turned on after both key id and secret are
-              saved. Secrets are write-only and never shown again after saving.
+              These appear as bullet points on the booking page. Leave blank to use defaults.
             </p>
           </div>
           <Input
-            label="Razorpay Key ID"
-            value={form.razorpay_key_id}
-            onChange={(v) => set('razorpay_key_id', v)}
-            placeholder="rzp_test_xxx or rzp_live_xxx"
+            label="Trust point 1"
+            value={form.trust_point_1}
+            onChange={(v) => set('trust_point_1', v)}
+            placeholder="e.g. Reserve through verified Razorpay checkout"
           />
           <Input
-            label={form.id ? 'New Razorpay Secret (leave blank to keep)' : 'Razorpay Secret'}
-            value={form.razorpay_key_secret_new}
-            onChange={(v) => set('razorpay_key_secret_new', v)}
-            type="password"
-            placeholder="••••••••"
+            label="Trust point 2"
+            value={form.trust_point_2}
+            onChange={(v) => set('trust_point_2', v)}
+            placeholder="e.g. Sales team reaches out within 24 hours"
           />
+          <Input
+            label="Trust point 3"
+            value={form.trust_point_3}
+            onChange={(v) => set('trust_point_3', v)}
+            placeholder="e.g. Site visit and possession handled end-to-end"
+            full
+          />
+
+          {/* Payment provider selector */}
+          <div className="sm:col-span-2 mt-2 pt-4 border-t border-white/10">
+            <p className="label">Payment gateway (only one active per project)</p>
+          </div>
+          <div className="sm:col-span-2">
+            <div className="flex gap-4">
+              <label className={`flex-1 glass rounded-xl p-4 cursor-pointer border-2 transition ${form.payment_provider === 'razorpay' ? 'border-neon-magenta/60' : 'border-transparent'}`}>
+                <input
+                  type="radio"
+                  name="payment_provider"
+                  value="razorpay"
+                  checked={form.payment_provider === 'razorpay'}
+                  onChange={() => set('payment_provider', 'razorpay')}
+                  className="mr-2 accent-[#D92EFF]"
+                />
+                <span className="font-medium">Razorpay</span>
+              </label>
+              <label className={`flex-1 glass rounded-xl p-4 cursor-pointer border-2 transition ${form.payment_provider === 'cashfree' ? 'border-neon-magenta/60' : 'border-transparent'}`}>
+                <input
+                  type="radio"
+                  name="payment_provider"
+                  value="cashfree"
+                  checked={form.payment_provider === 'cashfree'}
+                  onChange={() => set('payment_provider', 'cashfree')}
+                  className="mr-2 accent-[#D92EFF]"
+                />
+                <span className="font-medium">Cashfree</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Razorpay credentials */}
+          {form.payment_provider === 'razorpay' && (
+            <>
+              <Input
+                label="Razorpay Key ID"
+                value={form.razorpay_key_id}
+                onChange={(v) => set('razorpay_key_id', v)}
+                placeholder="rzp_test_xxx or rzp_live_xxx"
+              />
+              <Input
+                label={form.id ? 'New Razorpay Secret (leave blank to keep)' : 'Razorpay Secret'}
+                value={form.razorpay_key_secret_new}
+                onChange={(v) => set('razorpay_key_secret_new', v)}
+                type="password"
+                placeholder="••••••••"
+              />
+            </>
+          )}
+
+          {/* Cashfree credentials */}
+          {form.payment_provider === 'cashfree' && (
+            <>
+              <Input
+                label="Cashfree App ID"
+                value={form.cashfree_app_id}
+                onChange={(v) => set('cashfree_app_id', v)}
+                placeholder="Your Cashfree App ID"
+              />
+              <Input
+                label={form.id ? 'New Cashfree Secret (leave blank to keep)' : 'Cashfree Secret Key'}
+                value={form.cashfree_secret_key_new}
+                onChange={(v) => set('cashfree_secret_key_new', v)}
+                type="password"
+                placeholder="••••••••"
+              />
+              <div>
+                <span className="label block mb-1.5">Cashfree Mode</span>
+                <select
+                  value={form.cashfree_mode}
+                  onChange={(e) => set('cashfree_mode', e.target.value)}
+                  className="input"
+                >
+                  <option value="test">Sandbox (Test)</option>
+                  <option value="production">Production (Live)</option>
+                </select>
+              </div>
+            </>
+          )}
         </div>
 
         {error && (

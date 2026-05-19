@@ -3,6 +3,7 @@ import { getProjectBySlug } from '@/lib/projects';
 import { createBooking, attachOrder } from '@/lib/bookings';
 import { validateBookingPayload, sanitizeText } from '@/lib/validation';
 import { createRazorpayOrder } from '@/lib/razorpay';
+import { createCashfreeOrder } from '@/lib/cashfree';
 import { audit } from '@/lib/audit';
 
 export const runtime = 'nodejs';
@@ -22,17 +23,30 @@ export async function POST(req: NextRequest) {
         { status: 404 }
       );
     }
-    if (!project.payment_enabled || !project.razorpay_active) {
+    if (!project.payment_enabled) {
       return NextResponse.json(
         { ok: false, message: 'Payments are temporarily unavailable for this project.' },
         { status: 409 }
       );
     }
-    if (!project.razorpay_key_id || !project.razorpay_key_secret) {
-      return NextResponse.json(
-        { ok: false, message: 'Razorpay is not configured for this project.' },
-        { status: 409 }
-      );
+
+    const provider = project.payment_provider || 'razorpay';
+
+    // Validate provider credentials
+    if (provider === 'razorpay') {
+      if (!project.razorpay_active || !project.razorpay_key_id || !project.razorpay_key_secret) {
+        return NextResponse.json(
+          { ok: false, message: 'Razorpay is not configured for this project.' },
+          { status: 409 }
+        );
+      }
+    } else if (provider === 'cashfree') {
+      if (!project.cashfree_active || !project.cashfree_app_id || !project.cashfree_secret_key) {
+        return NextResponse.json(
+          { ok: false, message: 'Cashfree is not configured for this project.' },
+          { status: 409 }
+        );
+      }
     }
 
     const v = validateBookingPayload(body);
@@ -55,46 +69,88 @@ export async function POST(req: NextRequest) {
       pincode: sanitizeText(body.pincode, 6),
     });
 
-    const orderPromise = createRazorpayOrder({
-      keyId: project.razorpay_key_id,
-      keySecret: project.razorpay_key_secret,
-      amountInRupees: booking.amount,
-      receipt: booking.reference_number,
-      notes: {
-        reference_number: booking.reference_number,
-        project: project.name,
-        developer: project.developer,
-        city: project.city,
-        tower_unit: booking.tower_unit,
-        full_name: booking.full_name,
-        email: booking.email,
-        mobile: booking.mobile,
-      },
-    });
-
-    const order = (await Promise.race([
-      orderPromise,
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Razorpay timeout')), TIMEOUT_MS)
-      ),
-    ])) as { id: string; amount: number };
-
-    await attachOrder(booking.id, order.id);
-    await audit('booking.created', {
-      booking_id: booking.id,
-      reference: booking.reference_number,
-      project_id: project.id,
-      amount: booking.amount,
-    });
-
-    return NextResponse.json({
-      ok: true,
-      booking_id: booking.id,
+    const notes = {
       reference_number: booking.reference_number,
-      order_id: order.id,
-      amount_paise: order.amount,
-      razorpay_key_id: project.razorpay_key_id,
-    });
+      project: project.name,
+      developer: project.developer,
+      city: project.city,
+      tower_unit: booking.tower_unit,
+      full_name: booking.full_name,
+      email: booking.email,
+      mobile: booking.mobile,
+    };
+
+    if (provider === 'razorpay') {
+      const orderPromise = createRazorpayOrder({
+        keyId: project.razorpay_key_id,
+        keySecret: project.razorpay_key_secret,
+        amountInRupees: booking.amount,
+        receipt: booking.reference_number,
+        notes,
+      });
+
+      const order = (await Promise.race([
+        orderPromise,
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Razorpay timeout')), TIMEOUT_MS)
+        ),
+      ])) as { id: string; amount: number };
+
+      await attachOrder(booking.id, order.id);
+      await audit('booking.created', {
+        booking_id: booking.id,
+        reference: booking.reference_number,
+        project_id: project.id,
+        amount: booking.amount,
+        provider: 'razorpay',
+      });
+
+      return NextResponse.json({
+        ok: true,
+        provider: 'razorpay',
+        booking_id: booking.id,
+        reference_number: booking.reference_number,
+        order_id: order.id,
+        amount_paise: order.amount,
+        razorpay_key_id: project.razorpay_key_id,
+      });
+    } else {
+      // Cashfree
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://booking.flowrealty.in';
+      const returnUrl = `${siteUrl}/booking/cashfree-return?ref=${encodeURIComponent(booking.reference_number)}`;
+
+      const cfOrder = await createCashfreeOrder({
+        appId: project.cashfree_app_id,
+        secretKey: project.cashfree_secret_key,
+        mode: project.cashfree_mode || 'test',
+        orderId: booking.reference_number,
+        amountInRupees: booking.amount,
+        customerName: booking.full_name,
+        customerEmail: booking.email,
+        customerPhone: booking.mobile,
+        returnUrl,
+        notes,
+      });
+
+      await attachOrder(booking.id, cfOrder.orderId);
+      await audit('booking.created', {
+        booking_id: booking.id,
+        reference: booking.reference_number,
+        project_id: project.id,
+        amount: booking.amount,
+        provider: 'cashfree',
+      });
+
+      return NextResponse.json({
+        ok: true,
+        provider: 'cashfree',
+        booking_id: booking.id,
+        reference_number: booking.reference_number,
+        order_id: cfOrder.orderId,
+        payment_session_id: cfOrder.paymentSessionId,
+        cashfree_mode: project.cashfree_mode || 'test',
+      });
+    }
   } catch (err: any) {
     const detail =
       err?.error?.description ||
@@ -105,7 +161,7 @@ export async function POST(req: NextRequest) {
       detail === 'Razorpay timeout'
         ? 'Payment provider did not respond. Please try again.'
         : err?.statusCode === 401
-          ? 'Razorpay credentials for this project are invalid. Please contact support.'
+          ? 'Payment credentials for this project are invalid. Please contact support.'
           : 'Could not create booking. Please try again.';
     return NextResponse.json({ ok: false, message }, { status: 500 });
   }

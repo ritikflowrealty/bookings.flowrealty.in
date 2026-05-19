@@ -28,13 +28,21 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const newVal = value ? 1 : 0;
   if (
     (field === 'booking_enabled' || field === 'payment_enabled') &&
-    newVal === 1 &&
-    !row.razorpay_active
+    newVal === 1
   ) {
-    return NextResponse.json(
-      { ok: false, message: 'Configure Razorpay key and secret first.' },
-      { status: 400 }
-    );
+    const provider = row.payment_provider || 'razorpay';
+    if (provider === 'razorpay' && !row.razorpay_active) {
+      return NextResponse.json(
+        { ok: false, message: 'Configure Razorpay key and secret first.' },
+        { status: 400 }
+      );
+    }
+    if (provider === 'cashfree' && !row.cashfree_active) {
+      return NextResponse.json(
+        { ok: false, message: 'Configure Cashfree App ID and Secret first.' },
+        { status: 400 }
+      );
+    }
   }
 
   await db.execute({

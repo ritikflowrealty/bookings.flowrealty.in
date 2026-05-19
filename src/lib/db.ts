@@ -37,14 +37,13 @@ export function getDb(): Client {
 
 /**
  * Idempotent: applies schema.sql once if the projects table doesn't exist,
- * then runs seed.sql if there are zero projects. Safe to call on every cold start.
+ * then runs additive migrations, then seeds if empty.
  */
 export async function ensureSchema(): Promise<void> {
   if (_bootstrapped) return _bootstrapped;
   _bootstrapped = (async () => {
     const db = getDb();
 
-    // Check whether the projects table exists
     const tableCheck = await db.execute({
       sql: `SELECT name FROM sqlite_master WHERE type='table' AND name='projects'`,
       args: [],
@@ -57,6 +56,9 @@ export async function ensureSchema(): Promise<void> {
         await execMultiple(db, schema);
       }
     }
+
+    // Run additive migrations safely on existing DBs
+    await runMigrations(db);
 
     const count = await db.execute(`SELECT COUNT(*) as c FROM projects`);
     const c = Number((count.rows[0] as Record<string, unknown>)?.c ?? 0);
@@ -75,11 +77,35 @@ export async function ensureSchema(): Promise<void> {
 }
 
 /**
+ * Additive migrations. Each ALTER TABLE is wrapped in try/catch so it's safe
+ * to run repeatedly (column already exists = no-op).
+ */
+async function runMigrations(db: Client): Promise<void> {
+  const addColumns = [
+    `ALTER TABLE projects ADD COLUMN cashfree_app_id TEXT DEFAULT ''`,
+    `ALTER TABLE projects ADD COLUMN cashfree_secret_key TEXT DEFAULT ''`,
+    `ALTER TABLE projects ADD COLUMN cashfree_active INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE projects ADD COLUMN cashfree_mode TEXT DEFAULT 'test'`,
+    `ALTER TABLE projects ADD COLUMN payment_provider TEXT NOT NULL DEFAULT 'razorpay'`,
+    `ALTER TABLE projects ADD COLUMN brochure_url TEXT DEFAULT ''`,
+    `ALTER TABLE projects ADD COLUMN trust_point_1 TEXT DEFAULT ''`,
+    `ALTER TABLE projects ADD COLUMN trust_point_2 TEXT DEFAULT ''`,
+    `ALTER TABLE projects ADD COLUMN trust_point_3 TEXT DEFAULT ''`,
+  ];
+  for (const sql of addColumns) {
+    try {
+      await db.execute(sql);
+    } catch {
+      // Column already exists, safe to ignore
+    }
+  }
+}
+
+/**
  * libsql executes one statement at a time. Split a SQL file on semicolons and
  * skip empty / pragma-only statements safely. Comments are stripped.
  */
 async function execMultiple(db: Client, sql: string): Promise<void> {
-  // Strip line comments
   const cleaned = sql.replace(/--.*$/gm, '');
   const statements = cleaned
     .split(/;\s*(?:\r?\n|$)/)
@@ -91,10 +117,7 @@ async function execMultiple(db: Client, sql: string): Promise<void> {
     try {
       await db.execute(stmt);
     } catch (err) {
-      if (isPragma) {
-        // Hosted libsql ignores some pragmas. Don't fail the bootstrap because of one.
-        continue;
-      }
+      if (isPragma) continue;
       const preview = stmt.slice(0, 120).replace(/\s+/g, ' ');
       throw new Error(`Failed to apply SQL: ${preview} | cause: ${(err as Error).message}`);
     }
@@ -114,6 +137,15 @@ export type ProjectRow = {
   razorpay_key_id: string;
   razorpay_key_secret: string;
   razorpay_active: number;
+  cashfree_app_id: string;
+  cashfree_secret_key: string;
+  cashfree_active: number;
+  cashfree_mode: string;
+  payment_provider: string;
+  brochure_url: string;
+  trust_point_1: string;
+  trust_point_2: string;
+  trust_point_3: string;
   is_visible: number;
   booking_enabled: number;
   payment_enabled: number;

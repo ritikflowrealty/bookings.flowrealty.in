@@ -29,7 +29,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const highlight_text = sanitizeText(body.highlight_text ?? row.highlight_text, 80);
   const image_url = sanitizeText(body.image_url ?? row.image_url, 600);
   const learn_more_url = sanitizeText(body.learn_more_url ?? row.learn_more_url, 600);
+  const brochure_url = sanitizeText(body.brochure_url ?? row.brochure_url, 600);
+  const trust_point_1 = sanitizeText(body.trust_point_1 ?? row.trust_point_1, 200);
+  const trust_point_2 = sanitizeText(body.trust_point_2 ?? row.trust_point_2, 200);
+  const trust_point_3 = sanitizeText(body.trust_point_3 ?? row.trust_point_3, 200);
 
+  // Payment provider (mutex: only one active)
+  const payment_provider = (body.payment_provider === 'cashfree' ? 'cashfree' : 'razorpay');
+
+  // Razorpay keys
   const razorpay_key_id =
     body.razorpay_key_id !== undefined && body.razorpay_key_id !== ''
       ? sanitizeText(body.razorpay_key_id, 120)
@@ -38,48 +46,62 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     body.razorpay_key_secret !== undefined && body.razorpay_key_secret !== ''
       ? sanitizeText(body.razorpay_key_secret, 200)
       : row.razorpay_key_secret;
-
   const razorpay_active = razorpay_key_id && razorpay_key_secret ? 1 : 0;
 
+  // Cashfree keys
+  const cashfree_app_id =
+    body.cashfree_app_id !== undefined && body.cashfree_app_id !== ''
+      ? sanitizeText(body.cashfree_app_id, 120)
+      : row.cashfree_app_id;
+  const cashfree_secret_key =
+    body.cashfree_secret_key !== undefined && body.cashfree_secret_key !== ''
+      ? sanitizeText(body.cashfree_secret_key, 200)
+      : row.cashfree_secret_key;
+  const cashfree_active = cashfree_app_id && cashfree_secret_key ? 1 : 0;
+  const cashfree_mode = body.cashfree_mode === 'production' ? 'production' : 'test';
+
+  // Toggles
   const is_visible = body.is_visible !== undefined ? (body.is_visible ? 1 : 0) : row.is_visible;
-  let booking_enabled =
+  const booking_enabled =
     body.booking_enabled !== undefined ? (body.booking_enabled ? 1 : 0) : row.booking_enabled;
-  let payment_enabled =
+  const payment_enabled =
     body.payment_enabled !== undefined ? (body.payment_enabled ? 1 : 0) : row.payment_enabled;
 
-  if ((booking_enabled || payment_enabled) && !razorpay_active) {
-    return NextResponse.json(
-      {
-        ok: false,
-        message:
-          'Cannot enable booking or payment until Razorpay key and secret are set for this project.',
-      },
-      { status: 400 }
-    );
+  // Enforce: cannot enable payment without the active provider having credentials
+  if (payment_enabled) {
+    if (payment_provider === 'razorpay' && !razorpay_active) {
+      return NextResponse.json(
+        { ok: false, message: 'Cannot enable payment. Razorpay key and secret are not set.' },
+        { status: 400 }
+      );
+    }
+    if (payment_provider === 'cashfree' && !cashfree_active) {
+      return NextResponse.json(
+        { ok: false, message: 'Cannot enable payment. Cashfree App ID and Secret are not set.' },
+        { status: 400 }
+      );
+    }
   }
 
   await db.execute({
     sql: `UPDATE projects SET
             name = ?, developer = ?, city = ?, description = ?, highlight_text = ?,
-            image_url = ?, learn_more_url = ?,
+            image_url = ?, learn_more_url = ?, brochure_url = ?,
+            trust_point_1 = ?, trust_point_2 = ?, trust_point_3 = ?,
+            payment_provider = ?,
             razorpay_key_id = ?, razorpay_key_secret = ?, razorpay_active = ?,
+            cashfree_app_id = ?, cashfree_secret_key = ?, cashfree_active = ?, cashfree_mode = ?,
             is_visible = ?, booking_enabled = ?, payment_enabled = ?,
             updated_at = datetime('now')
           WHERE id = ?`,
     args: [
-      name,
-      developer,
-      city,
-      description,
-      highlight_text,
-      image_url,
-      learn_more_url,
-      razorpay_key_id,
-      razorpay_key_secret,
-      razorpay_active,
-      is_visible,
-      booking_enabled,
-      payment_enabled,
+      name, developer, city, description, highlight_text,
+      image_url, learn_more_url, brochure_url,
+      trust_point_1, trust_point_2, trust_point_3,
+      payment_provider,
+      razorpay_key_id, razorpay_key_secret, razorpay_active,
+      cashfree_app_id, cashfree_secret_key, cashfree_active, cashfree_mode,
+      is_visible, booking_enabled, payment_enabled,
       id,
     ],
   });

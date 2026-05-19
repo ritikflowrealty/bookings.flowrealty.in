@@ -7,6 +7,7 @@ import type { PublicProject } from '@/lib/projects';
 declare global {
   interface Window {
     Razorpay?: any;
+    Cashfree?: any;
   }
 }
 
@@ -20,6 +21,19 @@ function loadRazorpayScript(): Promise<boolean> {
     if (window.Razorpay) return resolve(true);
     const s = document.createElement('script');
     s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    s.async = true;
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+  });
+}
+
+function loadCashfreeScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined') return resolve(false);
+    if (window.Cashfree) return resolve(true);
+    const s = document.createElement('script');
+    s.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
     s.async = true;
     s.onload = () => resolve(true);
     s.onerror = () => resolve(false);
@@ -90,7 +104,7 @@ export function BookingForm({
 
     setSubmitting(true);
     try {
-      // 1) create booking + razorpay order on the server
+      // 1) create booking + order on the server
       const resp = await fetch('/api/bookings/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -116,76 +130,11 @@ export function BookingForm({
         return;
       }
 
-      // 2) load razorpay script
-      const ok = await loadRazorpayScript();
-      if (!ok) {
-        setGlobalError('Could not load Razorpay. Check your internet connection.');
-        setRetryCount((c) => c + 1);
-        setSubmitting(false);
-        return;
+      if (data.provider === 'cashfree') {
+        await handleCashfree(data);
+      } else {
+        await handleRazorpay(data);
       }
-
-      // 3) open checkout
-      const rzp = new window.Razorpay({
-        key: data.razorpay_key_id,
-        order_id: data.order_id,
-        amount: data.amount_paise,
-        currency: 'INR',
-        name: 'Flow Realty',
-        description: `${project.name} · ${project.developer}`,
-        prefill: {
-          name: form.full_name,
-          email: form.email,
-          contact: form.mobile,
-        },
-        notes: {
-          reference_number: data.reference_number,
-          project: project.name,
-          developer: project.developer,
-          city: project.city,
-          tower_unit: form.tower_unit,
-          full_name: form.full_name,
-          email: form.email,
-          mobile: form.mobile,
-          address: form.address,
-          customer_city: form.city,
-          pincode: form.pincode,
-        },
-        theme: { color: '#7B2EFF' },
-        modal: {
-          ondismiss: () => {
-            setSubmitting(false);
-            setGlobalError('Payment window closed before completion.');
-            setRetryCount((c) => c + 1);
-          },
-        },
-        handler: async (resp: any) => {
-          // verify on the server
-          const v = await fetch('/api/bookings/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              booking_id: data.booking_id,
-              razorpay_order_id: resp.razorpay_order_id,
-              razorpay_payment_id: resp.razorpay_payment_id,
-              razorpay_signature: resp.razorpay_signature,
-            }),
-          });
-          const vd = await v.json();
-          if (!v.ok || !vd.ok) {
-            setGlobalError('Payment verification failed. Please contact support.');
-            setSubmitting(false);
-            return;
-          }
-          router.push(`/booking/success?ref=${encodeURIComponent(data.reference_number)}`);
-        },
-      });
-      rzp.on('payment.failed', (resp: any) => {
-        setGlobalError(resp?.error?.description || 'Payment failed.');
-        setRetryCount((c) => c + 1);
-        setSubmitting(false);
-      });
-      rzp.open();
     } catch (err: any) {
       setGlobalError(err?.message || 'Something went wrong. Try again.');
       setRetryCount((c) => c + 1);
@@ -193,11 +142,106 @@ export function BookingForm({
     }
   }
 
+  async function handleRazorpay(data: any) {
+    const ok = await loadRazorpayScript();
+    if (!ok) {
+      setGlobalError('Could not load Razorpay. Check your internet connection.');
+      setRetryCount((c) => c + 1);
+      setSubmitting(false);
+      return;
+    }
+
+    const rzp = new window.Razorpay({
+      key: data.razorpay_key_id,
+      order_id: data.order_id,
+      amount: data.amount_paise,
+      currency: 'INR',
+      name: 'Flow Realty',
+      description: `${project.name} · ${project.developer}`,
+      prefill: {
+        name: form.full_name,
+        email: form.email,
+        contact: form.mobile,
+      },
+      notes: {
+        reference_number: data.reference_number,
+        project: project.name,
+        developer: project.developer,
+        city: project.city,
+        tower_unit: form.tower_unit,
+        full_name: form.full_name,
+        email: form.email,
+        mobile: form.mobile,
+      },
+      theme: { color: '#7B2EFF' },
+      modal: {
+        ondismiss: () => {
+          setSubmitting(false);
+          setGlobalError('Payment window closed before completion.');
+          setRetryCount((c) => c + 1);
+        },
+      },
+      handler: async (resp: any) => {
+        const v = await fetch('/api/bookings/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            booking_id: data.booking_id,
+            razorpay_order_id: resp.razorpay_order_id,
+            razorpay_payment_id: resp.razorpay_payment_id,
+            razorpay_signature: resp.razorpay_signature,
+          }),
+        });
+        const vd = await v.json();
+        if (!v.ok || !vd.ok) {
+          setGlobalError('Payment verification failed. Please contact support.');
+          setSubmitting(false);
+          return;
+        }
+        router.push(`/booking/success?ref=${encodeURIComponent(data.reference_number)}`);
+      },
+    });
+    rzp.on('payment.failed', (resp: any) => {
+      setGlobalError(resp?.error?.description || 'Payment failed.');
+      setRetryCount((c) => c + 1);
+      setSubmitting(false);
+    });
+    rzp.open();
+  }
+
+  async function handleCashfree(data: any) {
+    const ok = await loadCashfreeScript();
+    if (!ok) {
+      setGlobalError('Could not load Cashfree. Check your internet connection.');
+      setRetryCount((c) => c + 1);
+      setSubmitting(false);
+      return;
+    }
+
+    const cashfree = window.Cashfree({
+      mode: data.cashfree_mode === 'production' ? 'production' : 'sandbox',
+    });
+
+    cashfree.checkout({
+      paymentSessionId: data.payment_session_id,
+      redirectTarget: '_modal',
+    }).then(() => {
+      // Payment completed, redirect to return URL which verifies
+      router.push(`/booking/cashfree-return?ref=${encodeURIComponent(data.reference_number)}`);
+    }).catch(() => {
+      setGlobalError('Payment window closed or failed.');
+      setRetryCount((c) => c + 1);
+      setSubmitting(false);
+    });
+  }
+
   const payLabel = (() => {
     const n = Number(form.amount);
     if (!Number.isFinite(n) || n <= 0) return 'Pay';
     return `Pay ₹${n.toLocaleString('en-IN')}`;
   })();
+
+  const providerName = project.payment_provider === 'cashfree' ? 'Cashfree' : 'Razorpay';
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-5">
@@ -260,7 +304,6 @@ export function BookingForm({
             <input
               inputMode="numeric"
               className="input"
-              placeholder=""
               value={form.amount as string}
               onChange={(e) => setField('amount', e.target.value.replace(/[^\d]/g, ''))}
             />
@@ -330,11 +373,11 @@ export function BookingForm({
         disabled={submitting || retryCount >= MAX_RETRIES}
         className="btn-neon w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {submitting ? 'Opening Razorpay…' : payLabel}
+        {submitting ? `Opening ${providerName}…` : payLabel}
       </button>
 
       <p className="text-[11px] text-ink-dim">
-        Secured by Razorpay. By continuing you agree that this booking is provisional and subject
+        Secured by {providerName}. By continuing you agree that this booking is provisional and subject
         to confirmation by Flow Realty.
       </p>
     </form>
