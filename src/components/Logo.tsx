@@ -1,8 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-const NATURAL_W = 512;
-const NATURAL_H = 512;
+const NATURAL_W = 270;
+const NATURAL_H = 100;
 const RATIO = NATURAL_W / NATURAL_H;
 
 /**
