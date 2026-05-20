@@ -1,10 +1,10 @@
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SectionReveal } from '@/components/SectionReveal';
-import { getSession, PORTAL_COOKIE } from '@/lib/portal-auth';
+import { auth, signOut } from '@/auth';
 import { ensureSchema, getDb, rowsAs } from '@/lib/db';
+import { PushOptIn } from '@/components/PushOptIn';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,9 +22,8 @@ type StatRow = {
 };
 
 export default async function DeveloperDashboard() {
-  const store = await cookies();
-  const session = await getSession(store.get(PORTAL_COOKIE.developer)?.value);
-  if (!session || session.portal !== 'developer') redirect('/developer-portal/login');
+  const session = await auth();
+  if (!session?.developerId) redirect('/developer-portal/login');
 
   await ensureSchema();
   const db = getDb();
@@ -33,8 +32,8 @@ export default async function DeveloperDashboard() {
     sql: `SELECT du.id, du.full_name, du.email, du.developer_id, du.role, d.name AS developer_name
           FROM developer_users du
           JOIN developers d ON d.id = du.developer_id
-          WHERE du.id = ? LIMIT 1`,
-    args: [session.userId],
+          WHERE LOWER(du.email) = ? LIMIT 1`,
+    args: [(session.user?.email || '').toLowerCase()],
   });
   const user = rowsAs<{
     id: number;
@@ -109,11 +108,14 @@ export default async function DeveloperDashboard() {
               <h1 className="mt-1 font-display text-3xl tracking-tight">{user.developer_name}</h1>
               <p className="text-xs text-ink-dim mt-1">Signed in as {user.full_name} · {user.role}</p>
             </div>
-            <form action="/api/portal/logout" method="POST">
-              <input type="hidden" name="portal" value="developer" />
+            <form action={async () => { 'use server'; await signOut({ redirectTo: '/' }); }}>
               <button type="submit" className="btn-ghost text-sm">Sign out</button>
             </form>
           </div>
+
+          <SectionReveal className="mt-8">
+            <PushOptIn portal="developer" />
+          </SectionReveal>
 
           <SectionReveal className="mt-8">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">

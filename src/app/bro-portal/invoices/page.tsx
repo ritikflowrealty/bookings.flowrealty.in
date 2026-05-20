@@ -1,9 +1,8 @@
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SectionReveal } from '@/components/SectionReveal';
-import { getSession, PORTAL_COOKIE } from '@/lib/portal-auth';
+import { auth } from '@/auth';
 import { ensureSchema, getDb, rowsAs } from '@/lib/db';
 import { CPInvoiceTab } from './CPInvoiceTab';
 
@@ -12,16 +11,15 @@ export const dynamic = 'force-dynamic';
 export const metadata = { title: 'My Invoices | Flow Realty Bro Portal' };
 
 export default async function CPInvoicesPage() {
-  const store = await cookies();
-  const session = await getSession(store.get(PORTAL_COOKIE.cp)?.value);
-  if (!session || session.portal !== 'cp') redirect('/bro-portal/login');
+  const session = await auth();
+  if (!session?.cpId) redirect('/bro-portal/login');
 
   await ensureSchema();
   const db = getDb();
 
   const cpRow = await db.execute({
     sql: `SELECT id, full_name, status FROM channel_partners WHERE id = ? LIMIT 1`,
-    args: [session.userId],
+    args: [session.cpId],
   });
   const cp = rowsAs<{ id: number; full_name: string; status: string }>(cpRow)[0];
   if (!cp || cp.status !== 'approved') redirect('/bro-portal/login');

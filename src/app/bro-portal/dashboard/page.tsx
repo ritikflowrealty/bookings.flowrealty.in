@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SectionReveal } from '@/components/SectionReveal';
-import { getSession, PORTAL_COOKIE } from '@/lib/portal-auth';
+import { auth, signOut } from '@/auth';
 import { ensureSchema, getDb, rowsAs } from '@/lib/db';
 import { listVisibleProjects } from '@/lib/projects';
+import { PushOptIn } from '@/components/PushOptIn';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,17 +16,15 @@ export const metadata = {
 };
 
 export default async function CPDashboard() {
-  const store = await cookies();
-  const token = store.get(PORTAL_COOKIE.cp)?.value;
-  const session = await getSession(token);
-  if (!session || session.portal !== 'cp') redirect('/bro-portal/login');
+  const session = await auth();
+  if (!session?.cpId) redirect('/bro-portal/login');
 
   await ensureSchema();
   const db = getDb();
 
   const cpRow = await db.execute({
     sql: `SELECT id, full_name, email, status FROM channel_partners WHERE id = ? LIMIT 1`,
-    args: [session.userId],
+    args: [session.cpId],
   });
   const cp = rowsAs<{ id: number; full_name: string; email: string; status: string }>(cpRow)[0];
   if (!cp) redirect('/bro-portal/login');
@@ -81,11 +80,14 @@ export default async function CPDashboard() {
               <p className="label">Bro Portal</p>
               <h1 className="mt-1 font-display text-3xl tracking-tight">Welcome, {cp.full_name.split(' ')[0]}.</h1>
             </div>
-            <form action="/api/portal/logout" method="POST">
-              <input type="hidden" name="portal" value="cp" />
+            <form action={async () => { 'use server'; await signOut({ redirectTo: '/' }); }}>
               <button type="submit" className="btn-ghost text-sm">Sign out</button>
             </form>
           </div>
+
+          <SectionReveal className="mt-8">
+            <PushOptIn portal="cp" />
+          </SectionReveal>
 
           <SectionReveal className="mt-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

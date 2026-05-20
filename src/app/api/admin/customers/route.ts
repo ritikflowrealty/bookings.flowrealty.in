@@ -3,7 +3,6 @@ import { ensureSchema, getDb } from '@/lib/db';
 import { guardAdmin } from '@/lib/guard';
 import { sanitizeText } from '@/lib/validation';
 import { audit } from '@/lib/audit';
-import { sendEmail, brandedTemplate } from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -41,22 +40,6 @@ export async function POST(req: NextRequest) {
     });
     const id = (r.rows[0] as any)?.id;
     await audit('admin.customer_created', { id, email });
-
-    void sendEmail({
-      to: { email, name: full_name },
-      subject: 'Your Flow Realty home portal is ready',
-      html: brandedTemplate({
-        heading: 'Welcome to your home portal',
-        bodyHtml: `
-          <p>Hi ${full_name},</p>
-          <p>Your Flow Realty home portal is now active. Sign in to track your booking, construction stage, documents, and notifications.</p>
-        `,
-        ctaLabel: 'Sign in to My Home',
-        ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL || ''}/my-home/login`,
-      }),
-      tags: ['customer-welcome'],
-    }).catch(() => {});
-
     return NextResponse.json({ ok: true, id });
   } catch (err: any) {
     if (String(err?.message || '').includes('UNIQUE')) {

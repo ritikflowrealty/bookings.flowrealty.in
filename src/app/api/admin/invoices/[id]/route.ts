@@ -3,7 +3,7 @@ import { ensureSchema, getDb } from '@/lib/db';
 import { guardAdmin } from '@/lib/guard';
 import { sanitizeText } from '@/lib/validation';
 import { audit } from '@/lib/audit';
-import { sendEmail, brandedTemplate } from '@/lib/email';
+import { sendToCustomerOrAdmin } from '@/lib/push';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -36,26 +36,18 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   });
   await audit('admin.invoice_status', { id, status });
 
-  // Email CP
+  // Push the CP
   const cpRow = await db.execute({
-    sql: `SELECT cp.email, cp.full_name, i.amount FROM cp_invoices i
-          JOIN channel_partners cp ON cp.id = i.channel_partner_id WHERE i.id = ?`,
+    sql: `SELECT i.channel_partner_id, i.amount FROM cp_invoices i WHERE i.id = ?`,
     args: [id],
   });
   const cp = cpRow.rows[0] as any;
   if (cp) {
-    void sendEmail({
-      to: { email: cp.email, name: cp.full_name },
-      subject: `Your invoice is now ${status.replace('_', ' ')}`,
-      html: brandedTemplate({
-        heading: `Invoice ${status.replace('_', ' ')}`,
-        bodyHtml: `
-          <p>Hi ${cp.full_name},</p>
-          <p>Your invoice for ₹${Number(cp.amount).toLocaleString('en-IN')} is now <strong>${status.replace('_', ' ')}</strong>.</p>
-          ${notes ? `<p>Notes: ${notes}</p>` : ''}
-        `,
-      }),
-      tags: [`invoice-${status}`],
+    void sendToCustomerOrAdmin('cp', cp.channel_partner_id, {
+      title: `Invoice ${status.replace('_', ' ')}`,
+      body: `₹${Number(cp.amount).toLocaleString('en-IN')} · ${notes || ''}`.trim(),
+      url: '/bro-portal/invoices',
+      tag: `invoice-${status}`,
     }).catch(() => {});
   }
 

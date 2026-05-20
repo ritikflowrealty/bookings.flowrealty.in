@@ -1,10 +1,10 @@
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SectionReveal } from '@/components/SectionReveal';
-import { getSession, PORTAL_COOKIE } from '@/lib/portal-auth';
+import { auth, signOut } from '@/auth';
 import { ensureSchema, getDb, rowsAs } from '@/lib/db';
+import { PushOptIn } from '@/components/PushOptIn';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,16 +28,15 @@ function stageProgress(stage: string): number {
 }
 
 export default async function CustomerDashboard() {
-  const store = await cookies();
-  const session = await getSession(store.get(PORTAL_COOKIE.customer)?.value);
-  if (!session || session.portal !== 'customer') redirect('/my-home/login');
+  const session = await auth();
+  if (!session?.customerId) redirect('/my-home/login');
 
   await ensureSchema();
   const db = getDb();
 
   const userRow = await db.execute({
     sql: `SELECT id, full_name, email, mobile FROM customer_users WHERE id = ? LIMIT 1`,
-    args: [session.userId],
+    args: [session.customerId],
   });
   const user = rowsAs<{ id: number; full_name: string; email: string; mobile: string }>(userRow)[0];
   if (!user) redirect('/my-home/login');
@@ -83,11 +82,14 @@ export default async function CustomerDashboard() {
               <p className="label">My Home</p>
               <h1 className="mt-1 font-display text-3xl tracking-tight">Welcome back, {user.full_name.split(' ')[0]}.</h1>
             </div>
-            <form action="/api/portal/logout" method="POST">
-              <input type="hidden" name="portal" value="customer" />
+            <form action={async () => { 'use server'; await signOut({ redirectTo: '/' }); }}>
               <button type="submit" className="btn-ghost text-sm">Sign out</button>
             </form>
           </div>
+
+          <SectionReveal className="mt-10">
+            <PushOptIn portal="customer" />
+          </SectionReveal>
 
           <SectionReveal className="mt-10">
             <h2 className="font-display text-2xl">Your unit{units.length > 1 ? 's' : ''}</h2>

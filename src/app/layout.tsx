@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { SmoothScroll } from '@/components/SmoothScroll';
 import { PageReveal } from '@/components/PageReveal';
+import { AuthProvider } from '@/components/AuthProvider';
 import './globals.css';
 
 const onest = Onest({
@@ -91,8 +92,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-screen bg-bg font-sans">
-        <SmoothScroll />
-        <PageReveal>{children}</PageReveal>
+        <AuthProvider>
+          <SmoothScroll />
+          <PageReveal>{children}</PageReveal>
+        </AuthProvider>
         <Analytics />
         <SpeedInsights />
       </body>

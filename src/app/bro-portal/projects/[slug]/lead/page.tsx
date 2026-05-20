@@ -1,21 +1,19 @@
 import { redirect, notFound } from 'next/navigation';
-import { cookies } from 'next/headers';
 import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SectionReveal } from '@/components/SectionReveal';
-import { getSession, PORTAL_COOKIE } from '@/lib/portal-auth';
+import { auth } from '@/auth';
 import { getProjectBySlug, toPublicProject } from '@/lib/projects';
 import { LeadForm } from './LeadForm';
 
 export const dynamic = 'force-dynamic';
 
 export default async function CPLeadPage({ params }: { params: Promise<{ slug: string }> }) {
-  const store = await cookies();
-  const session = await getSession(store.get(PORTAL_COOKIE.cp)?.value);
-  if (!session || session.portal !== 'cp') {
+  const session = await auth();
+  if (!session?.cpId) {
     const { slug } = await params;
-    redirect(`/bro-portal/login?next=/bro-portal/projects/${slug}/lead`);
+    redirect(`/bro-portal/login?callbackUrl=/bro-portal/projects/${slug}/lead`);
   }
   const { slug } = await params;
   const row = await getProjectBySlug(slug);

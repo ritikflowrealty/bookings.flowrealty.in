@@ -3,7 +3,6 @@ import { ensureSchema, getDb } from '@/lib/db';
 import { guardAdmin } from '@/lib/guard';
 import { sanitizeText } from '@/lib/validation';
 import { audit } from '@/lib/audit';
-import { sendEmail, brandedTemplate } from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -53,24 +52,6 @@ export async function POST(req: NextRequest) {
       args: [email, full_name, developer_id, role],
     });
     await audit('admin.developer_user_invited', { email, developer_id, role });
-
-    const developerName = (dev.rows[0] as any).name;
-    void sendEmail({
-      to: { email, name: full_name },
-      subject: `You've been invited to the Flow Realty Developer Portal`,
-      html: brandedTemplate({
-        heading: `Welcome to the ${developerName} portal`,
-        bodyHtml: `
-          <p>Hi ${full_name},</p>
-          <p>You have been invited to access the Flow Realty Developer Portal for <strong>${developerName}</strong>.</p>
-          <p>Sign in any time at the link below — we'll send a 6-digit code to your email.</p>
-        `,
-        ctaLabel: 'Sign in to Developer Portal',
-        ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL || ''}/developer-portal/login`,
-      }),
-      tags: ['developer-invite'],
-    }).catch(() => {});
-
     return NextResponse.json({ ok: true });
   } catch (err: any) {
     if (String(err?.message || '').includes('UNIQUE')) {

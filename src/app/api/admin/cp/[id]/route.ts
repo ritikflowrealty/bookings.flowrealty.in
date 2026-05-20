@@ -3,7 +3,7 @@ import { ensureSchema, getDb } from '@/lib/db';
 import { guardAdmin } from '@/lib/guard';
 import { sanitizeText } from '@/lib/validation';
 import { audit } from '@/lib/audit';
-import { sendEmail, brandedTemplate } from '@/lib/email';
+import { sendToCustomerOrAdmin } from '@/lib/push';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -29,38 +29,25 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!cp) return NextResponse.json({ ok: false, message: 'Not found.' }, { status: 404 });
 
   let newStatus: string;
-  let subject = '';
-  let body_html = '';
+  let pushTitle = '';
+  let pushBody = '';
 
   if (action === 'approve') {
     newStatus = 'approved';
-    subject = 'You\'re approved · Flow Realty Bro Portal';
-    body_html = `
-      <p>Hi ${cp.full_name},</p>
-      <p>Welcome to the Flow Realty Bro Portal. Your registration has been approved.</p>
-      <p>Sign in any time at <a href="${process.env.NEXT_PUBLIC_SITE_URL || ''}/bro-portal/login">our portal</a> using your registered email. We'll send a 6-digit code to sign you in.</p>
-      <p>Once signed in, pick any project to register a lead. Our sales team takes it from there.</p>
-    `;
+    pushTitle = 'Your CP registration is approved';
+    pushBody = 'You can now sign in to the Bro Portal.';
   } else if (action === 'reject') {
     newStatus = 'rejected';
-    subject = 'Your Flow Realty registration update';
-    body_html = `
-      <p>Hi ${cp.full_name},</p>
-      <p>Thanks for registering with Flow Realty. Unfortunately we couldn't approve your registration at this time.</p>
-      ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
-      <p>You're welcome to register again with corrected details.</p>
-    `;
+    pushTitle = 'CP registration update';
+    pushBody = reason || 'Your registration was not approved.';
   } else if (action === 'suspend') {
     newStatus = 'suspended';
-    subject = 'Your Flow Realty CP account has been suspended';
-    body_html = `
-      <p>Hi ${cp.full_name},</p>
-      <p>Your CP account has been suspended.</p>
-      ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
-      <p>Reach out to our team to resolve this.</p>
-    `;
+    pushTitle = 'CP account suspended';
+    pushBody = reason || 'Reach out to our team to resolve this.';
   } else if (action === 'activate') {
     newStatus = 'approved';
+    pushTitle = 'CP account reactivated';
+    pushBody = 'You can sign in again.';
   } else {
     return NextResponse.json({ ok: false, message: 'Invalid action.' }, { status: 400 });
   }
@@ -71,20 +58,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   });
   await audit('admin.cp_status_changed', { cp_id: id, action, new_status: newStatus });
 
-  if (subject && body_html) {
-    void sendEmail({
-      to: { email: cp.email, name: cp.full_name },
-      subject,
-      html: brandedTemplate({
-        heading: subject,
-        bodyHtml: body_html,
-        ...(newStatus === 'approved'
-          ? { ctaLabel: 'Sign in to Bro Portal', ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL || ''}/bro-portal/login` }
-          : {}),
-      }),
-      tags: [`cp-${action}`],
-    }).catch(() => {});
-  }
+  // Push the CP if they have notifications enabled
+  void sendToCustomerOrAdmin('cp', id, {
+    title: pushTitle,
+    body: pushBody,
+    url: '/bro-portal/dashboard',
+    tag: `cp-${action}`,
+  }).catch(() => {});
 
   return NextResponse.json({ ok: true });
 }

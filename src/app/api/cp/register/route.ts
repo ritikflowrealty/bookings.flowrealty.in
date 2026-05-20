@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ensureSchema, getDb } from '@/lib/db';
 import { sanitizeText } from '@/lib/validation';
 import { audit } from '@/lib/audit';
-import { sendEmail, brandedTemplate } from '@/lib/email';
+import { sendToCustomerOrAdmin } from '@/lib/push';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -81,34 +81,12 @@ export async function POST(req: NextRequest) {
 
     await audit('cp.registration_submitted', { email, mobile });
 
-    // Email confirmation to CP
-    void sendEmail({
-      to: { email, name: full_name },
-      subject: 'Your Flow Realty CP registration is received',
-      html: brandedTemplate({
-        heading: 'Registration received',
-        bodyHtml: `
-          <p>Hi ${full_name},</p>
-          <p>Thanks for registering as a channel partner with Flow Realty. Our team reviews registrations within 24 hours.</p>
-          <p>We&rsquo;ll email you the moment you&rsquo;re approved with sign-in instructions.</p>
-        `,
-      }),
-      tags: ['cp-registered'],
-    }).catch(() => {});
-
-    // Email internal team
-    void sendEmail({
-      to: { email: process.env.EMAIL_FROM_ADDRESS || 'hello@flowrealty.in' },
-      subject: `New CP registration: ${full_name}`,
-      html: brandedTemplate({
-        heading: 'New CP registration to review',
-        bodyHtml: `
-          <p><strong>${full_name}</strong> · ${email} · ${mobile}</p>
-          <p>RERA: ${rera_number} · PAN: ${pan_number}</p>
-          <p><a href="${process.env.NEXT_PUBLIC_SITE_URL || ''}/admin">Review in admin panel</a></p>
-        `,
-      }),
-      tags: ['cp-registered-internal'],
+    // Push admin
+    void sendToCustomerOrAdmin('admin', null, {
+      title: `New CP registration: ${full_name}`,
+      body: `${email} · ${mobile}`,
+      url: '/admin',
+      tag: 'cp-registered',
     }).catch(() => {});
 
     return NextResponse.json({ ok: true });

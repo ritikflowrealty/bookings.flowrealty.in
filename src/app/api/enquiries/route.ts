@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ensureSchema, getDb } from '@/lib/db';
 import { sanitizeText } from '@/lib/validation';
 import { audit } from '@/lib/audit';
-import { sendEmail, brandedTemplate } from '@/lib/email';
+import { sendToCustomerOrAdmin } from '@/lib/push';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -34,24 +34,12 @@ export async function POST(req: NextRequest) {
     });
     await audit('enquiry.submitted', { full_name, mobile, city }, { ip: req.headers.get('x-forwarded-for') || '' });
 
-    // Fire-and-forget internal notification
-    void sendEmail({
-      to: { email: process.env.EMAIL_FROM_ADDRESS || 'hello@flowrealty.in', name: 'Flow Sales' },
-      subject: `New enquiry from ${full_name}`,
-      html: brandedTemplate({
-        heading: 'New enquiry received',
-        bodyHtml: `
-          <p><strong>Name:</strong> ${full_name}</p>
-          <p><strong>Mobile:</strong> ${mobile}</p>
-          ${email ? `<p><strong>Email:</strong> ${email}</p>` : ''}
-          <p><strong>City:</strong> ${city || '—'}</p>
-          <p><strong>Configuration:</strong> ${configuration || '—'}</p>
-          <p><strong>Budget:</strong> ${budget_range || '—'}</p>
-          ${message ? `<p><strong>Message:</strong> ${message}</p>` : ''}
-          <p style="color:#6B6F78;font-size:12px;">Source: ${source_page}</p>
-        `,
-      }),
-      tags: ['enquiry'],
+    // Push admin
+    void sendToCustomerOrAdmin('admin', null, {
+      title: `New enquiry from ${full_name}`,
+      body: `${mobile}${configuration ? ' · ' + configuration : ''}${budget_range ? ' · ' + budget_range : ''}`,
+      url: '/admin',
+      tag: 'enquiry-new',
     }).catch(() => {});
 
     return NextResponse.json({ ok: true });

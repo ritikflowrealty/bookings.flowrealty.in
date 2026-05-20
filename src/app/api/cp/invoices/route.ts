@@ -1,18 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { auth } from '@/auth';
 import { ensureSchema, getDb } from '@/lib/db';
-import { getSession, PORTAL_COOKIE } from '@/lib/portal-auth';
 import { sanitizeText } from '@/lib/validation';
 import { audit } from '@/lib/audit';
-import { sendEmail, brandedTemplate } from '@/lib/email';
+import { sendToCustomerOrAdmin } from '@/lib/push';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
-  const store = await cookies();
-  const session = await getSession(store.get(PORTAL_COOKIE.cp)?.value);
-  if (!session || session.portal !== 'cp') {
+  const session = await auth();
+  if (!session?.cpId) {
     return NextResponse.json({ ok: false, message: 'Sign in required.' }, { status: 401 });
   }
 
@@ -29,40 +27,27 @@ export async function POST(req: NextRequest) {
   if (!invoice_doc_url) return NextResponse.json({ ok: false, message: 'Invoice file required.' }, { status: 400 });
 
   const db = getDb();
-  // Confirm lead belongs to this CP
   const lead = await db.execute({
     sql: `SELECT id, channel_partner_id, booking_id FROM leads WHERE id = ? LIMIT 1`,
     args: [lead_id],
   });
   const l = lead.rows[0] as any;
-  if (!l || l.channel_partner_id !== session.userId) {
+  if (!l || l.channel_partner_id !== session.cpId) {
     return NextResponse.json({ ok: false, message: 'Lead not found.' }, { status: 404 });
   }
 
   await db.execute({
     sql: `INSERT INTO cp_invoices (channel_partner_id, lead_id, booking_id, invoice_number, amount, invoice_doc_url, notes, status)
           VALUES (?, ?, ?, ?, ?, ?, ?, 'submitted')`,
-    args: [
-      session.userId, lead_id, l.booking_id || null,
-      invoice_number, amount, invoice_doc_url, notes,
-    ],
+    args: [session.cpId, lead_id, l.booking_id || null, invoice_number, amount, invoice_doc_url, notes],
   });
-  await audit('cp.invoice_submitted', { cp_id: session.userId, lead_id, amount });
+  await audit('cp.invoice_submitted', { cp_id: session.cpId, lead_id, amount });
 
-  // Notify internal team
-  void sendEmail({
-    to: { email: process.env.EMAIL_FROM_ADDRESS || 'hello@flowrealty.in' },
-    subject: `New CP invoice for review · ₹${amount.toLocaleString('en-IN')}`,
-    html: brandedTemplate({
-      heading: 'New CP invoice submitted',
-      bodyHtml: `
-        <p>CP <strong>${session.email}</strong> has submitted an invoice.</p>
-        <p>Amount: ₹${amount.toLocaleString('en-IN')}</p>
-        <p>Invoice file: <a href="${invoice_doc_url}">View</a></p>
-        ${notes ? `<p>Notes: ${notes}</p>` : ''}
-      `,
-    }),
-    tags: ['cp-invoice'],
+  void sendToCustomerOrAdmin('admin', null, {
+    title: `New CP invoice · ₹${amount.toLocaleString('en-IN')}`,
+    body: `From ${session.user?.email}`,
+    url: '/admin',
+    tag: 'invoice-new',
   }).catch(() => {});
 
   return NextResponse.json({ ok: true });

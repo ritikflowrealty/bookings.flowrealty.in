@@ -18,7 +18,7 @@ export default function AdminPage() {
       setAuthed(false);
       return;
     }
-    fetch('/api/auth/check', { headers: { Authorization: `Bearer ${t}` } })
+    fetch('/api/admin-auth/check', { headers: { Authorization: `Bearer ${t}` } })
       .then((r) => r.json())
       .then((d) => {
         if (!d.ok) localStorage.removeItem(TOKEN_KEY);
@@ -32,7 +32,7 @@ export default function AdminPage() {
     setError(null);
     setLoading(true);
     try {
-      const r = await fetch('/api/auth/login', {
+      const r = await fetch('/api/admin-auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
@@ -55,7 +55,7 @@ export default function AdminPage() {
   function handleLogout() {
     const t = localStorage.getItem(TOKEN_KEY);
     if (t) {
-      fetch('/api/auth/logout', {
+      fetch('/api/admin-auth/logout', {
         method: 'POST',
         headers: { Authorization: `Bearer ${t}` },
       }).catch(() => {});
@@ -106,3 +106,4 @@ export default function AdminPage() {
 
   return <AdminDashboard onLogout={handleLogout} />;
 }
+

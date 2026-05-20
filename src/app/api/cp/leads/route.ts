@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import crypto from 'node:crypto';
-import { getSession, PORTAL_COOKIE } from '@/lib/portal-auth';
+import { auth } from '@/auth';
 import { ensureSchema, getDb } from '@/lib/db';
 import { sanitizeText } from '@/lib/validation';
 import { audit } from '@/lib/audit';
-import { sendEmail, brandedTemplate } from '@/lib/email';
+import { sendToCustomerOrAdmin } from '@/lib/push';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -18,9 +17,8 @@ function leadRef(): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const store = await cookies();
-    const session = await getSession(store.get(PORTAL_COOKIE.cp)?.value);
-    if (!session || session.portal !== 'cp') {
+    const session = await auth();
+    if (!session?.cpId) {
       return NextResponse.json({ ok: false, message: 'Sign in required.' }, { status: 401 });
     }
 
@@ -30,7 +28,7 @@ export async function POST(req: NextRequest) {
     // Confirm CP is approved
     const cpRow = await db.execute({
       sql: `SELECT id, status, full_name, email FROM channel_partners WHERE id = ? LIMIT 1`,
-      args: [session.userId],
+      args: [session.cpId],
     });
     const cp = cpRow.rows[0] as any;
     if (!cp || cp.status !== 'approved') {
@@ -70,22 +68,12 @@ export async function POST(req: NextRequest) {
     });
     await audit('lead.cp_submitted', { reference, cp_id: cp.id, project_id });
 
-    // Email internal team
-    void sendEmail({
-      to: { email: process.env.EMAIL_FROM_ADDRESS || 'hello@flowrealty.in' },
-      subject: `New CP lead: ${first} ${last} for project ${project_id}`,
-      html: brandedTemplate({
-        heading: 'New CP-submitted lead',
-        bodyHtml: `
-          <p><strong>Reference:</strong> ${reference}</p>
-          <p><strong>Submitted by CP:</strong> ${cp.full_name} (${cp.email})</p>
-          <p><strong>Prospect:</strong> ${first} ${last} · ${mobile}${email ? ` · ${email}` : ''}</p>
-          <p><strong>Configuration:</strong> ${configuration || '—'} · <strong>Budget:</strong> ${budget_range || '—'} · <strong>Timeline:</strong> ${timeline || '—'}</p>
-          ${preferred_location ? `<p><strong>Preferred location:</strong> ${preferred_location}</p>` : ''}
-          ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
-        `,
-      }),
-      tags: ['cp-lead'],
+    // Push notification to admin
+    void sendToCustomerOrAdmin('admin', null, {
+      title: `New CP lead from ${cp.full_name}`,
+      body: `${first} ${last} · ${configuration || 'config tbd'} · ${budget_range || 'budget tbd'}`,
+      url: '/admin',
+      tag: 'lead-new',
     }).catch(() => {});
 
     return NextResponse.json({ ok: true, reference_number: reference });

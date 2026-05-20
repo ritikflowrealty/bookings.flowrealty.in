@@ -1,14 +1,20 @@
+import { redirect } from 'next/navigation';
+import { auth } from '@/auth';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SectionReveal } from '@/components/SectionReveal';
-import { OtpLoginForm } from '@/components/OtpLoginForm';
+import { GoogleSignInButton } from '@/components/GoogleSignInButton';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Developer Sign In | Flow Realty',
-  description: 'Sign in to the Flow Realty developer portal to view your projects, bookings and walk-ins.',
 };
 
-export default function DeveloperLogin() {
+export default async function DeveloperLogin() {
+  const session = await auth();
+  if (session?.portals?.includes('developer')) redirect('/developer-portal/dashboard');
+
   return (
     <>
       <Navbar />
@@ -18,15 +24,14 @@ export default function DeveloperLogin() {
             <span className="chip">Developer Portal</span>
             <h1 className="mt-4 font-display text-3xl tracking-tight">Sign in</h1>
             <p className="mt-2 text-ink-muted">
-              Enter your invited email. We&rsquo;ll send a 6-digit code to sign in.
+              Sign in with the Google account invited by Flow Realty.
             </p>
           </SectionReveal>
           <SectionReveal className="mt-8">
             <div className="glass rounded-3xl p-6 sm:p-8">
-              <OtpLoginForm portal="developer" redirectTo="/developer-portal/dashboard" />
+              <GoogleSignInButton callbackUrl="/developer-portal/dashboard" />
               <p className="mt-6 text-xs text-ink-dim">
-                Access is by invitation only. Reach out to your Flow Realty contact if you need
-                access.
+                Access is by invitation only. Reach out to your Flow Realty contact if you need access.
               </p>
             </div>
           </SectionReveal>
