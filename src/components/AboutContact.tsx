@@ -1,8 +1,18 @@
-export function AboutContact() {
+import { getSettings, setting } from '@/lib/settings';
+
+export async function AboutContact() {
+  const s = await getSettings();
+  const phone = setting(s, 'contact_phone', '+91 80 1234 5678');
+  const email = setting(s, 'contact_email', 'hello@flowrealty.in');
+  const addr1 = setting(s, 'contact_address', 'Richards Town, Bangalore');
+  const addr2 = setting(s, 'contact_address_line_2', '3rd Floor, Clarke Road');
+  const salesValue = setting(s, 'total_sales_value', '3500');
+  const salesUnit = setting(s, 'total_sales_unit', 'Cr');
+  const years = setting(s, 'years_active', '5');
+
   return (
     <section id="contact" className="relative py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
-        {/* About */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           <div className="lg:col-span-7">
             <span className="chip">Contact Us</span>
@@ -12,8 +22,8 @@ export function AboutContact() {
             <p className="mt-5 text-ink-muted leading-relaxed">
               Flow Realty is one of India&rsquo;s largest real-estate sales partners. We work
               alongside developers to bring their best projects to life and to the families who
-              deserve them. Over the last five years that work has translated into more than
-              ₹3,500 Cr in residential sales across Bangalore, Mysore, and Bhubaneswar.
+              deserve them. Over the last {years} years that work has translated into more than
+              ₹{salesValue} {salesUnit} in residential sales across Bangalore, Mysore, and Bhubaneswar.
             </p>
             <p className="mt-3 text-ink-muted leading-relaxed">
               When you book a home through this page, you are tapping into that network. The
@@ -29,28 +39,21 @@ export function AboutContact() {
             </div>
           </div>
 
-          {/* Contact cards on the right */}
           <div className="lg:col-span-5 grid gap-4">
-            <a
-              href="tel:+918012345678"
-              className="glass rounded-2xl p-6 hover:bg-white/[0.07] transition-colors group"
-            >
+            <a href={`tel:${phone.replace(/\s+/g, '')}`} className="glass rounded-2xl p-6 hover:bg-white/[0.07] transition-colors">
               <p className="label">Call us</p>
-              <p className="mt-2 font-display text-2xl">+91 80 1234 5678</p>
+              <p className="mt-2 font-display text-2xl">{phone}</p>
               <p className="text-xs text-ink-dim mt-1">Mon to Sat, 9 AM to 7 PM</p>
             </a>
-            <a
-              href="mailto:hello@flowrealty.in"
-              className="glass rounded-2xl p-6 hover:bg-white/[0.07] transition-colors"
-            >
+            <a href={`mailto:${email}`} className="glass rounded-2xl p-6 hover:bg-white/[0.07] transition-colors">
               <p className="label">Email</p>
-              <p className="mt-2 font-display text-2xl">hello@flowrealty.in</p>
+              <p className="mt-2 font-display text-2xl">{email}</p>
               <p className="text-xs text-ink-dim mt-1">Replies within 2 hours</p>
             </a>
             <div className="glass rounded-2xl p-6">
               <p className="label">Visit</p>
-              <p className="mt-2 font-display text-2xl">Richards Town, Bangalore</p>
-              <p className="text-xs text-ink-dim mt-1">3rd Floor, Clarke Road</p>
+              <p className="mt-2 font-display text-2xl">{addr1}</p>
+              <p className="text-xs text-ink-dim mt-1">{addr2}</p>
             </div>
           </div>
         </div>

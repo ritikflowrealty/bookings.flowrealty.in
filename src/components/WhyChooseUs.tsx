@@ -1,31 +1,40 @@
-const items = [
-  {
-    title: 'Vetted by sales experts',
-    body: 'We partner directly with India\'s leading developers across 15+ active projects. Every home on this page is one our team has walked, priced, and approved before you ever see it.',
-  },
-  {
-    title: 'Backed by performance',
-    body: 'Over ₹3,500 Cr in residential sales delivered in the last five years. The projects we list are projects that move. The developers we work with deliver.',
-  },
-  {
-    title: 'Reserve in seconds',
-    body: 'Pick a unit. Pay the booking amount through Razorpay. Done. No paperwork, no waiting in a sales office, no follow-up calls before you even decide.',
-  },
-  {
-    title: 'A team that calls back',
-    body: 'Our 75-strong team from Tier-A brands and B-schools picks up the phone. You get a single point of contact who walks you through site visits, paperwork, and possession.',
-  },
-  {
-    title: 'Across the cities you live in',
-    body: 'Bangalore, Mysore, and Bhubaneswar today. Hyderabad opening soon. The same standard of curation everywhere we go.',
-  },
-  {
-    title: 'Built for the way you buy',
-    body: 'Most real-estate sites give you listings. We give you a verified shortlist, a transparent price, and a way to commit instantly when you find the one.',
-  },
-];
+import { getSettings, setting } from '@/lib/settings';
 
-export function WhyChooseUs() {
+export async function WhyChooseUs() {
+  const s = await getSettings();
+  const salesValue = setting(s, 'total_sales_value', '3500');
+  const salesUnit = setting(s, 'total_sales_unit', 'Cr');
+  const years = setting(s, 'years_active', '5');
+  const cpSize = setting(s, 'cp_distribution_size', '1000');
+  const teamSize = setting(s, 'team_size', '75');
+
+  const items = [
+    {
+      title: 'Vetted by sales experts',
+      body: `We partner directly with India's leading developers across active projects. Every home on this page is one our team has walked, priced, and approved before you ever see it.`,
+    },
+    {
+      title: 'Backed by performance',
+      body: `Over ₹${salesValue} ${salesUnit} in residential sales delivered in the last ${years} years. The projects we list are projects that move. The developers we work with deliver.`,
+    },
+    {
+      title: 'Reserve in seconds',
+      body: 'Pick a unit. Pay the booking amount through Razorpay or Cashfree. Done. No paperwork, no waiting in a sales office, no follow-up calls before you even decide.',
+    },
+    {
+      title: 'A team that calls back',
+      body: `Our ${teamSize}-strong team from Tier-A brands and B-schools picks up the phone. You get a single point of contact who walks you through site visits, paperwork, and possession.`,
+    },
+    {
+      title: `${cpSize}+ channel partner network`,
+      body: 'India\'s largest CP distribution. The home you book is also one a thousand brokers tracked, tried, and ranked.',
+    },
+    {
+      title: 'Built for the way you buy',
+      body: 'Most real-estate sites give you listings. We give you a verified shortlist, a transparent price, and a way to commit instantly when you find the one.',
+    },
+  ];
+
   return (
     <section id="why" className="relative py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
@@ -50,8 +59,7 @@ export function WhyChooseUs() {
               <span
                 className="inline-flex items-center justify-center w-9 h-9 rounded-xl text-xs font-semibold mb-4"
                 style={{
-                  background:
-                    'linear-gradient(135deg, rgba(123,46,255,0.25), rgba(255,60,130,0.25))',
+                  background: 'linear-gradient(135deg, rgba(123,46,255,0.25), rgba(255,60,130,0.25))',
                   color: '#F5F5F5',
                   border: '1px solid rgba(255,255,255,0.08)',
                 }}
