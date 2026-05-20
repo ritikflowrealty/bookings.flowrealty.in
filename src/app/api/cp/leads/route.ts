@@ -68,6 +68,23 @@ export async function POST(req: NextRequest) {
     });
     await audit('lead.cp_submitted', { reference, cp_id: cp.id, project_id });
 
+    // Push to external CRM if configured for this project
+    const projRow = await db.execute({
+      sql: `SELECT crm_endpoint, crm_form_data FROM projects WHERE id = ? LIMIT 1`,
+      args: [project_id],
+    });
+    const proj = projRow.rows[0] as any;
+    if (proj?.crm_endpoint) {
+      void pushToExternalCrm({
+        endpoint: proj.crm_endpoint,
+        formDataTemplate: proj.crm_form_data || '',
+        prospectName: `${first} ${last}`.trim(),
+        prospectPhone: mobile,
+      }).catch((err) => {
+        console.error('[crm-push] failed:', err?.message || err);
+      });
+    }
+
     // Push notification to admin
     void sendToCustomerOrAdmin('admin', null, {
       title: `New CP lead from ${cp.full_name}`,
@@ -79,5 +96,50 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, reference_number: reference });
   } catch (err: any) {
     return NextResponse.json({ ok: false, message: err?.message || 'Could not submit.' }, { status: 500 });
+  }
+}
+
+
+/**
+ * Pushes lead data to an external CRM (e.g. Totalityre/Sparkle).
+ * The `formDataTemplate` is a JSON string of key-value pairs stored in the admin panel.
+ * Placeholders {{name}} and {{phone}} are replaced with actual lead data.
+ */
+async function pushToExternalCrm(args: {
+  endpoint: string;
+  formDataTemplate: string;
+  prospectName: string;
+  prospectPhone: string;
+}): Promise<void> {
+  let pairs: Record<string, string> = {};
+  try {
+    pairs = JSON.parse(args.formDataTemplate);
+  } catch {
+    return; // malformed config, skip silently
+  }
+
+  const formData = new FormData();
+  for (const [key, val] of Object.entries(pairs)) {
+    const resolved = String(val)
+      .replace(/\{\{name\}\}/gi, args.prospectName)
+      .replace(/\{\{phone\}\}/gi, args.prospectPhone);
+    formData.append(key, resolved);
+  }
+
+  const resp = await fetch(args.endpoint, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+      userpagename: 'firsthello',
+      useraction: 'viewright',
+      platform: '1',
+      masterlisting: 'true',
+    },
+    body: formData,
+  });
+
+  if (!resp.ok) {
+    throw new Error(`CRM responded ${resp.status}`);
   }
 }

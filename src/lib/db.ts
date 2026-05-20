@@ -105,6 +105,9 @@ async function runMigrations(db: Client): Promise<void> {
     `ALTER TABLE projects ADD COLUMN locality TEXT DEFAULT ''`,
     `ALTER TABLE projects ADD COLUMN meta_title TEXT DEFAULT ''`,
     `ALTER TABLE projects ADD COLUMN meta_description TEXT DEFAULT ''`,
+    // External CRM integration (per-project)
+    `ALTER TABLE projects ADD COLUMN crm_endpoint TEXT DEFAULT ''`,
+    `ALTER TABLE projects ADD COLUMN crm_form_data TEXT DEFAULT ''`,
   ];
   for (const sql of addColumns) {
     try {
