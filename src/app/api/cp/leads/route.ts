@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
     // Confirm CP is approved
     const cpRow = await db.execute({
-      sql: `SELECT id, status, full_name, email FROM channel_partners WHERE id = ? LIMIT 1`,
+      sql: `SELECT id, status, full_name, email, mobile FROM channel_partners WHERE id = ? LIMIT 1`,
       args: [session.cpId],
     });
     const cp = cpRow.rows[0] as any;
@@ -70,22 +70,21 @@ export async function POST(req: NextRequest) {
 
     // Push to external CRM if configured for this project
     const projRow = await db.execute({
-      sql: `SELECT crm_endpoint, crm_form_data, crm_company_id, crm_access_token, crm_api_key, crm_project_name FROM projects WHERE id = ? LIMIT 1`,
+      sql: `SELECT crm_access_token, crm_api_key, name AS project_name FROM projects WHERE id = ? LIMIT 1`,
       args: [project_id],
     });
     const proj = projRow.rows[0] as any;
-    if (proj?.crm_endpoint && proj?.crm_access_token) {
+    if (proj?.crm_access_token && proj?.crm_api_key) {
       void pushToExternalCrm({
-        endpoint: proj.crm_endpoint,
-        companyId: proj.crm_company_id || '',
-        accessToken: proj.crm_access_token || '',
-        apiKey: proj.crm_api_key || '',
-        projectName: proj.crm_project_name || '',
-        formDataOverride: proj.crm_form_data || '',
+        accessToken: proj.crm_access_token,
+        apiKey: proj.crm_api_key,
+        projectName: proj.project_name || '',
         prospectFirstName: first,
         prospectLastName: last,
         prospectPhone: mobile,
         prospectEmail: email,
+        cpName: cp.full_name,
+        cpPhone: cp.mobile || '',
       }).catch((err) => {
         console.error('[crm-push] failed:', err?.message || err);
       });
@@ -107,43 +106,21 @@ export async function POST(req: NextRequest) {
 
 
 /**
- * Pushes lead to external CRM (Totalityre format).
- * Uses the structured LeadDetails JSON payload with auth headers.
+ * Pushes lead to Totalityre CRM.
+ * Only needs Access Token + Access API Key per project.
+ * Source = "Channel Partner" with CP name and phone in Notes.
  */
 async function pushToExternalCrm(args: {
-  endpoint: string;
-  companyId: string;
   accessToken: string;
   apiKey: string;
   projectName: string;
-  formDataOverride: string;
   prospectFirstName: string;
   prospectLastName: string;
   prospectPhone: string;
   prospectEmail: string;
+  cpName: string;
+  cpPhone: string;
 }): Promise<void> {
-  // If there's a raw JSON override, use that (legacy mode)
-  if (args.formDataOverride) {
-    try {
-      const pairs = JSON.parse(args.formDataOverride) as Record<string, string>;
-      const formData = new FormData();
-      for (const [key, val] of Object.entries(pairs)) {
-        formData.append(
-          key,
-          String(val)
-            .replace(/\{\{name\}\}/gi, `${args.prospectFirstName} ${args.prospectLastName}`.trim())
-            .replace(/\{\{phone\}\}/gi, args.prospectPhone)
-            .replace(/\{\{email\}\}/gi, args.prospectEmail)
-        );
-      }
-      await fetch(args.endpoint, { method: 'POST', body: formData });
-      return;
-    } catch {
-      // Fall through to structured format
-    }
-  }
-
-  // Totalityre structured API
   const payload = {
     LeadDetails: [
       { Attribute: 'FirstName', Value: args.prospectFirstName },
@@ -151,30 +128,30 @@ async function pushToExternalCrm(args: {
       { Attribute: 'LeadStatusSecondary', Value: 'New' },
       { Attribute: 'countrycode', Value: '+91' },
       { Attribute: 'Mobile', Value: args.prospectPhone },
-      { Attribute: 'Email', Value: args.prospectEmail },
+      { Attribute: 'Email', Value: args.prospectEmail || '' },
     ],
     ProjectDetails: [
       { Attribute: 'Project', Value: args.projectName },
-      { Attribute: 'LeadSource', Value: 'Media Online' },
-      { Attribute: 'LeadSecondarySource', Value: 'Website' },
-      { Attribute: 'LeadTertiarySource', Value: 'Flow Realty CP Portal' },
+      { Attribute: 'LeadSource', Value: 'Channel Partner' },
+      { Attribute: 'LeadSecondarySource', Value: args.cpName },
+      { Attribute: 'LeadTertiarySource', Value: args.cpPhone },
+      { Attribute: 'Notes', Value: `CP: ${args.cpName} (${args.cpPhone})` },
     ],
   };
 
-  const resp = await fetch(args.endpoint, {
+  const resp = await fetch('https://api.totalityre.com/api/v1.0/leads', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
       AccessToken: args.accessToken,
       AccessAPIkey: args.apiKey,
-      CompanyId: args.companyId,
     },
     body: JSON.stringify(payload),
   });
 
   if (!resp.ok) {
     const text = await resp.text().catch(() => '');
-    throw new Error(`CRM responded ${resp.status}: ${text.slice(0, 200)}`);
+    throw new Error(`CRM ${resp.status}: ${text.slice(0, 200)}`);
   }
 }

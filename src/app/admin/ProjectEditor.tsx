@@ -335,47 +335,22 @@ export function ProjectEditor({
 
           {/* External CRM integration */}
           <div className="sm:col-span-2 mt-2 pt-4 border-t border-white/10">
-            <p className="label">External CRM (Totalityre)</p>
+            <p className="label">CRM Integration (Totalityre)</p>
             <p className="text-xs text-ink-dim mt-1">
-              Leads submitted by CPs will also be pushed to this CRM.
+              Leads from CPs will auto-push to the developer's CRM. Leave blank to skip.
             </p>
           </div>
-          <Input
-            label="CRM Endpoint URL"
-            value={form.crm_endpoint || ''}
-            onChange={(v) => set('crm_endpoint', v)}
-            placeholder="https://...totalityre.com/api/v1.0/firsthello.php"
-            full
-          />
-          <Input
-            label="CRM Company ID"
-            value={form.crm_company_id || ''}
-            onChange={(v) => set('crm_company_id', v)}
-            placeholder="e.g. 67f66691d5245e1d3e724f21"
-          />
           <Input
             label="CRM Access Token"
             value={form.crm_access_token || ''}
             onChange={(v) => set('crm_access_token', v)}
-            placeholder="Access Token"
+            placeholder="e.g. 67f66691d5245e1d3e724f21"
           />
           <Input
-            label="CRM API Key"
+            label="CRM Access API Key"
             value={form.crm_api_key || ''}
             onChange={(v) => set('crm_api_key', v)}
-            placeholder="Access API Key"
-          />
-          <Input
-            label="CRM Project Name"
-            value={form.crm_project_name || ''}
-            onChange={(v) => set('crm_project_name', v)}
-            placeholder="Project name as it appears in CRM"
-            hint="Used in the LeadDetails payload"
-          />
-          <Textarea
-            label="CRM Form Data (JSON override, optional)"
-            value={form.crm_form_data || ''}
-            onChange={(v) => set('crm_form_data', v)}
+            placeholder="e.g. dcb2149d142f6619715bb25e15ca24ff"
           />
         </div>
 
