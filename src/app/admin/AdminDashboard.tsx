@@ -7,6 +7,8 @@ import { CPManagement } from './CPManagement';
 import { SettingsEditor } from './SettingsEditor';
 import { LeadsManagement } from './LeadsManagement';
 import { DevelopersManagement } from './DevelopersManagement';
+import { CustomersManagement } from './CustomersManagement';
+import { InvoicesManagement } from './InvoicesManagement';
 
 const TOKEN_KEY = 'fr_admin_token';
 
@@ -63,7 +65,7 @@ type Booking = {
 };
 
 export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
-  const [tab, setTab] = useState<'projects' | 'bookings' | 'leads' | 'cp' | 'developers' | 'settings'>('projects');
+  const [tab, setTab] = useState<'projects' | 'bookings' | 'leads' | 'cp' | 'invoices' | 'developers' | 'customers' | 'settings'>('projects');
   const [projects, setProjects] = useState<AdminProject[] | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [bookings, setBookings] = useState<Booking[] | null>(null);
@@ -168,7 +170,9 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
             <TabBtn active={tab === 'bookings'} onClick={() => setTab('bookings')}>Bookings</TabBtn>
             <TabBtn active={tab === 'leads'} onClick={() => setTab('leads')}>Leads</TabBtn>
             <TabBtn active={tab === 'cp'} onClick={() => setTab('cp')}>Channel Partners</TabBtn>
+            <TabBtn active={tab === 'invoices'} onClick={() => setTab('invoices')}>Invoices</TabBtn>
             <TabBtn active={tab === 'developers'} onClick={() => setTab('developers')}>Developers</TabBtn>
+            <TabBtn active={tab === 'customers'} onClick={() => setTab('customers')}>Customers</TabBtn>
             <TabBtn active={tab === 'settings'} onClick={() => setTab('settings')}>Settings</TabBtn>
           </div>
           {tab === 'projects' && (
@@ -302,8 +306,10 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
           </section>
         )}
         {tab === 'cp' && <CPManagement authHeader={authHeader} />}
+        {tab === 'invoices' && <InvoicesManagement authHeader={authHeader} />}
         {tab === 'leads' && <LeadsManagement authHeader={authHeader} />}
         {tab === 'developers' && <DevelopersManagement authHeader={authHeader} />}
+        {tab === 'customers' && <CustomersManagement authHeader={authHeader} />}
         {tab === 'settings' && <SettingsEditor authHeader={authHeader} />}
       </main>
 
