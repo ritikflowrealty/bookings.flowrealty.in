@@ -5,6 +5,8 @@ import { Logo } from '@/components/Logo';
 import { ProjectEditor } from './ProjectEditor';
 import { CPManagement } from './CPManagement';
 import { SettingsEditor } from './SettingsEditor';
+import { LeadsManagement } from './LeadsManagement';
+import { DevelopersManagement } from './DevelopersManagement';
 
 const TOKEN_KEY = 'fr_admin_token';
 
@@ -61,7 +63,7 @@ type Booking = {
 };
 
 export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
-  const [tab, setTab] = useState<'projects' | 'bookings' | 'cp' | 'settings'>('projects');
+  const [tab, setTab] = useState<'projects' | 'bookings' | 'leads' | 'cp' | 'developers' | 'settings'>('projects');
   const [projects, setProjects] = useState<AdminProject[] | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [bookings, setBookings] = useState<Booking[] | null>(null);
@@ -164,7 +166,9 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
           <div className="inline-flex p-1 rounded-full glass">
             <TabBtn active={tab === 'projects'} onClick={() => setTab('projects')}>Projects</TabBtn>
             <TabBtn active={tab === 'bookings'} onClick={() => setTab('bookings')}>Bookings</TabBtn>
+            <TabBtn active={tab === 'leads'} onClick={() => setTab('leads')}>Leads</TabBtn>
             <TabBtn active={tab === 'cp'} onClick={() => setTab('cp')}>Channel Partners</TabBtn>
+            <TabBtn active={tab === 'developers'} onClick={() => setTab('developers')}>Developers</TabBtn>
             <TabBtn active={tab === 'settings'} onClick={() => setTab('settings')}>Settings</TabBtn>
           </div>
           {tab === 'projects' && (
@@ -298,6 +302,8 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
           </section>
         )}
         {tab === 'cp' && <CPManagement authHeader={authHeader} />}
+        {tab === 'leads' && <LeadsManagement authHeader={authHeader} />}
+        {tab === 'developers' && <DevelopersManagement authHeader={authHeader} />}
         {tab === 'settings' && <SettingsEditor authHeader={authHeader} />}
       </main>
 
