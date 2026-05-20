@@ -127,6 +127,15 @@ html {
   animation-delay: 120ms;
 }
 
+/* Logo on dark navbar: subtle white halo lifts the dark portions of the
+   wordmark off the background while preserving the gradient "F". */
+.logo-on-dark {
+  filter:
+    drop-shadow(0 0 1px rgba(255, 255, 255, 0.6))
+    drop-shadow(0 0 6px rgba(255, 255, 255, 0.25))
+    drop-shadow(0 0 14px rgba(217, 46, 255, 0.18));
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal, .reveal-delayed { animation: none; opacity: 1; }
   * { animation-duration: 0ms !important; transition-duration: 0ms !important; }
