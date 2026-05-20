@@ -63,6 +63,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   // External CRM
   const crm_endpoint = sanitizeText(body.crm_endpoint ?? (row as any).crm_endpoint ?? '', 500);
   const crm_form_data = sanitizeText(body.crm_form_data ?? (row as any).crm_form_data ?? '', 5000);
+  const crm_company_id = sanitizeText(body.crm_company_id ?? (row as any).crm_company_id ?? '', 120);
+  const crm_access_token = sanitizeText(body.crm_access_token ?? (row as any).crm_access_token ?? '', 200);
+  const crm_api_key = sanitizeText(body.crm_api_key ?? (row as any).crm_api_key ?? '', 200);
+  const crm_project_name = sanitizeText(body.crm_project_name ?? (row as any).crm_project_name ?? '', 200);
 
   // Toggles
   const is_visible = body.is_visible !== undefined ? (body.is_visible ? 1 : 0) : row.is_visible;
@@ -95,7 +99,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             payment_provider = ?,
             razorpay_key_id = ?, razorpay_key_secret = ?, razorpay_active = ?,
             cashfree_app_id = ?, cashfree_secret_key = ?, cashfree_active = ?, cashfree_mode = ?,
-            crm_endpoint = ?, crm_form_data = ?,
+            crm_endpoint = ?, crm_form_data = ?, crm_company_id = ?, crm_access_token = ?, crm_api_key = ?, crm_project_name = ?,
             is_visible = ?, booking_enabled = ?, payment_enabled = ?,
             updated_at = datetime('now')
           WHERE id = ?`,
@@ -106,7 +110,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       payment_provider,
       razorpay_key_id, razorpay_key_secret, razorpay_active,
       cashfree_app_id, cashfree_secret_key, cashfree_active, cashfree_mode,
-      crm_endpoint, crm_form_data,
+      crm_endpoint, crm_form_data, crm_company_id, crm_access_token, crm_api_key, crm_project_name,
       is_visible, booking_enabled, payment_enabled,
       id,
     ],

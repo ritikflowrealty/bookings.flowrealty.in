@@ -24,6 +24,10 @@ type Editable = {
   cashfree_mode: string;
   crm_endpoint: string;
   crm_form_data: string;
+  crm_company_id: string;
+  crm_access_token: string;
+  crm_api_key: string;
+  crm_project_name: string;
 };
 
 const empty: Editable = {
@@ -47,6 +51,10 @@ const empty: Editable = {
   cashfree_mode: 'test',
   crm_endpoint: '',
   crm_form_data: '',
+  crm_company_id: '',
+  crm_access_token: '',
+  crm_api_key: '',
+  crm_project_name: '',
 };
 
 export function ProjectEditor({
@@ -84,6 +92,10 @@ export function ProjectEditor({
           cashfree_mode: project.cashfree_mode || 'test',
           crm_endpoint: project.crm_endpoint || '',
           crm_form_data: project.crm_form_data || '',
+          crm_company_id: project.crm_company_id || '',
+          crm_access_token: project.crm_access_token || '',
+          crm_api_key: project.crm_api_key || '',
+          crm_project_name: project.crm_project_name || '',
         }
       : empty
   );
@@ -124,6 +136,10 @@ export function ProjectEditor({
         cashfree_mode: form.cashfree_mode,
         crm_endpoint: form.crm_endpoint,
         crm_form_data: form.crm_form_data,
+        crm_company_id: form.crm_company_id,
+        crm_access_token: form.crm_access_token,
+        crm_api_key: form.crm_api_key,
+        crm_project_name: form.crm_project_name,
       };
       if (form.razorpay_key_secret_new) {
         payload.razorpay_key_secret = form.razorpay_key_secret_new;
@@ -319,10 +335,9 @@ export function ProjectEditor({
 
           {/* External CRM integration */}
           <div className="sm:col-span-2 mt-2 pt-4 border-t border-white/10">
-            <p className="label">External CRM (optional)</p>
+            <p className="label">External CRM (Totalityre)</p>
             <p className="text-xs text-ink-dim mt-1">
-              When a CP submits a lead for this project, the system also POSTs to this endpoint.
-              Use {'{{phone}}'} and {'{{name}}'} as placeholders in the form data JSON.
+              Leads submitted by CPs will also be pushed to this CRM.
             </p>
           </div>
           <Input
@@ -332,8 +347,33 @@ export function ProjectEditor({
             placeholder="https://...totalityre.com/api/v1.0/firsthello.php"
             full
           />
+          <Input
+            label="CRM Company ID"
+            value={form.crm_company_id || ''}
+            onChange={(v) => set('crm_company_id', v)}
+            placeholder="e.g. 67f66691d5245e1d3e724f21"
+          />
+          <Input
+            label="CRM Access Token"
+            value={form.crm_access_token || ''}
+            onChange={(v) => set('crm_access_token', v)}
+            placeholder="Access Token"
+          />
+          <Input
+            label="CRM API Key"
+            value={form.crm_api_key || ''}
+            onChange={(v) => set('crm_api_key', v)}
+            placeholder="Access API Key"
+          />
+          <Input
+            label="CRM Project Name"
+            value={form.crm_project_name || ''}
+            onChange={(v) => set('crm_project_name', v)}
+            placeholder="Project name as it appears in CRM"
+            hint="Used in the LeadDetails payload"
+          />
           <Textarea
-            label="CRM Form Data (JSON)"
+            label="CRM Form Data (JSON override, optional)"
             value={form.crm_form_data || ''}
             onChange={(v) => set('crm_form_data', v)}
           />

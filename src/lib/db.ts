@@ -108,6 +108,10 @@ async function runMigrations(db: Client): Promise<void> {
     // External CRM integration (per-project)
     `ALTER TABLE projects ADD COLUMN crm_endpoint TEXT DEFAULT ''`,
     `ALTER TABLE projects ADD COLUMN crm_form_data TEXT DEFAULT ''`,
+    `ALTER TABLE projects ADD COLUMN crm_company_id TEXT DEFAULT ''`,
+    `ALTER TABLE projects ADD COLUMN crm_access_token TEXT DEFAULT ''`,
+    `ALTER TABLE projects ADD COLUMN crm_api_key TEXT DEFAULT ''`,
+    `ALTER TABLE projects ADD COLUMN crm_project_name TEXT DEFAULT ''`,
   ];
   for (const sql of addColumns) {
     try {

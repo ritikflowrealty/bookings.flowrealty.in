@@ -70,16 +70,22 @@ export async function POST(req: NextRequest) {
 
     // Push to external CRM if configured for this project
     const projRow = await db.execute({
-      sql: `SELECT crm_endpoint, crm_form_data FROM projects WHERE id = ? LIMIT 1`,
+      sql: `SELECT crm_endpoint, crm_form_data, crm_company_id, crm_access_token, crm_api_key, crm_project_name FROM projects WHERE id = ? LIMIT 1`,
       args: [project_id],
     });
     const proj = projRow.rows[0] as any;
-    if (proj?.crm_endpoint) {
+    if (proj?.crm_endpoint && proj?.crm_access_token) {
       void pushToExternalCrm({
         endpoint: proj.crm_endpoint,
-        formDataTemplate: proj.crm_form_data || '',
-        prospectName: `${first} ${last}`.trim(),
+        companyId: proj.crm_company_id || '',
+        accessToken: proj.crm_access_token || '',
+        apiKey: proj.crm_api_key || '',
+        projectName: proj.crm_project_name || '',
+        formDataOverride: proj.crm_form_data || '',
+        prospectFirstName: first,
+        prospectLastName: last,
         prospectPhone: mobile,
+        prospectEmail: email,
       }).catch((err) => {
         console.error('[crm-push] failed:', err?.message || err);
       });
@@ -101,45 +107,74 @@ export async function POST(req: NextRequest) {
 
 
 /**
- * Pushes lead data to an external CRM (e.g. Totalityre/Sparkle).
- * The `formDataTemplate` is a JSON string of key-value pairs stored in the admin panel.
- * Placeholders {{name}} and {{phone}} are replaced with actual lead data.
+ * Pushes lead to external CRM (Totalityre format).
+ * Uses the structured LeadDetails JSON payload with auth headers.
  */
 async function pushToExternalCrm(args: {
   endpoint: string;
-  formDataTemplate: string;
-  prospectName: string;
+  companyId: string;
+  accessToken: string;
+  apiKey: string;
+  projectName: string;
+  formDataOverride: string;
+  prospectFirstName: string;
+  prospectLastName: string;
   prospectPhone: string;
+  prospectEmail: string;
 }): Promise<void> {
-  let pairs: Record<string, string> = {};
-  try {
-    pairs = JSON.parse(args.formDataTemplate);
-  } catch {
-    return; // malformed config, skip silently
+  // If there's a raw JSON override, use that (legacy mode)
+  if (args.formDataOverride) {
+    try {
+      const pairs = JSON.parse(args.formDataOverride) as Record<string, string>;
+      const formData = new FormData();
+      for (const [key, val] of Object.entries(pairs)) {
+        formData.append(
+          key,
+          String(val)
+            .replace(/\{\{name\}\}/gi, `${args.prospectFirstName} ${args.prospectLastName}`.trim())
+            .replace(/\{\{phone\}\}/gi, args.prospectPhone)
+            .replace(/\{\{email\}\}/gi, args.prospectEmail)
+        );
+      }
+      await fetch(args.endpoint, { method: 'POST', body: formData });
+      return;
+    } catch {
+      // Fall through to structured format
+    }
   }
 
-  const formData = new FormData();
-  for (const [key, val] of Object.entries(pairs)) {
-    const resolved = String(val)
-      .replace(/\{\{name\}\}/gi, args.prospectName)
-      .replace(/\{\{phone\}\}/gi, args.prospectPhone);
-    formData.append(key, resolved);
-  }
+  // Totalityre structured API
+  const payload = {
+    LeadDetails: [
+      { Attribute: 'FirstName', Value: args.prospectFirstName },
+      { Attribute: 'LastName', Value: args.prospectLastName },
+      { Attribute: 'LeadStatusSecondary', Value: 'New' },
+      { Attribute: 'countrycode', Value: '+91' },
+      { Attribute: 'Mobile', Value: args.prospectPhone },
+      { Attribute: 'Email', Value: args.prospectEmail },
+    ],
+    ProjectDetails: [
+      { Attribute: 'Project', Value: args.projectName },
+      { Attribute: 'LeadSource', Value: 'Media Online' },
+      { Attribute: 'LeadSecondarySource', Value: 'Website' },
+      { Attribute: 'LeadTertiarySource', Value: 'Flow Realty CP Portal' },
+    ],
+  };
 
   const resp = await fetch(args.endpoint, {
     method: 'POST',
     headers: {
+      'Content-Type': 'application/json',
       Accept: 'application/json',
-      'X-Requested-With': 'XMLHttpRequest',
-      userpagename: 'firsthello',
-      useraction: 'viewright',
-      platform: '1',
-      masterlisting: 'true',
+      AccessToken: args.accessToken,
+      AccessAPIkey: args.apiKey,
+      CompanyId: args.companyId,
     },
-    body: formData,
+    body: JSON.stringify(payload),
   });
 
   if (!resp.ok) {
-    throw new Error(`CRM responded ${resp.status}`);
+    const text = await resp.text().catch(() => '');
+    throw new Error(`CRM responded ${resp.status}: ${text.slice(0, 200)}`);
   }
 }
