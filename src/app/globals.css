@@ -136,6 +136,52 @@ html {
     drop-shadow(0 0 14px rgba(217, 46, 255, 0.18));
 }
 
+/* Section-level reveal: children rise from bottom with stagger */
+.reveal-section > * {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 800ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              transform 800ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.reveal-section.is-revealed > *:nth-child(1) { transition-delay: 0ms; }
+.reveal-section.is-revealed > *:nth-child(2) { transition-delay: 80ms; }
+.reveal-section.is-revealed > *:nth-child(3) { transition-delay: 160ms; }
+.reveal-section.is-revealed > *:nth-child(4) { transition-delay: 240ms; }
+.reveal-section.is-revealed > *:nth-child(5) { transition-delay: 320ms; }
+.reveal-section.is-revealed > *:nth-child(n+6) { transition-delay: 400ms; }
+.reveal-section.is-revealed > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Text mask reveal — H1/H2 wipes up from below a clip line */
+.text-mask-reveal {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+}
+.text-mask-reveal > span {
+  display: inline-block;
+  transform: translateY(110%);
+  animation: maskUp 900ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+@keyframes maskUp {
+  to { transform: translateY(0); }
+}
+
+/* Image hover zoom (inside cards) */
+.zoom-hover {
+  overflow: hidden;
+}
+.zoom-hover img,
+.zoom-hover .next-image-wrap img {
+  transition: transform 1200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.zoom-hover:hover img,
+.zoom-hover:hover .next-image-wrap img {
+  transform: scale(1.06);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal, .reveal-delayed { animation: none; opacity: 1; }
   * { animation-duration: 0ms !important; transition-duration: 0ms !important; }

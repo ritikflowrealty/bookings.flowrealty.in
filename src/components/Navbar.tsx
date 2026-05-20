@@ -2,16 +2,19 @@
 import Link from 'next/link';
 import { Logo } from './Logo';
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 const links = [
-  { href: '/#', label: 'Home' },
-  { href: '/#projects', label: 'Projects' },
-  { href: '/#why', label: 'Why Choose Us' },
+  { href: '/', label: 'Home' },
+  { href: '/projects', label: 'Projects' },
+  { href: '/team', label: 'Team Flow' },
+  { href: '/bro-portal', label: 'Bro Portal' },
 ];
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -19,6 +22,16 @@ export function Navbar() {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  function isActive(href: string) {
+    if (href === '/') return pathname === '/';
+    return pathname.startsWith(href);
+  }
 
   return (
     <header
@@ -39,24 +52,28 @@ export function Navbar() {
 
         <nav className="hidden md:flex items-center gap-1">
           {links.map((l) => (
-            <a
+            <Link
               key={l.href}
               href={l.href}
-              className="relative px-4 py-2 rounded-full text-sm text-ink-muted hover:text-ink transition-colors group"
+              className={`relative px-4 py-2 rounded-full text-sm transition-colors group ${
+                isActive(l.href) ? 'text-ink' : 'text-ink-muted hover:text-ink'
+              }`}
             >
               <span className="relative z-10">{l.label}</span>
               <span
                 aria-hidden="true"
-                className="absolute inset-0 rounded-full bg-white/0 group-hover:bg-white/[0.06] scale-90 group-hover:scale-100 transition-all duration-300"
+                className={`absolute inset-0 rounded-full transition-all duration-300 scale-90 group-hover:scale-100 ${
+                  isActive(l.href) ? 'bg-white/[0.06]' : 'bg-white/0 group-hover:bg-white/[0.06]'
+                }`}
               />
-            </a>
+            </Link>
           ))}
-          <a
-            href="/#contact"
+          <Link
+            href="/enquire"
             className="btn-neon ml-3 text-sm py-2.5 transition-transform duration-300 hover:scale-105 active:scale-95"
           >
-            Contact Us
-          </a>
+            Enquire Now
+          </Link>
         </nav>
 
         <button
@@ -81,22 +98,20 @@ export function Navbar() {
         <div className="md:hidden border-t border-white/10 bg-bg/90 backdrop-blur-2xl animate-[fadeIn_200ms_ease-out]">
           <div className="px-5 py-4 flex flex-col gap-2">
             {links.map((l) => (
-              <a
+              <Link
                 key={l.href}
                 href={l.href}
-                onClick={() => setOpen(false)}
                 className="px-4 py-3 rounded-xl text-ink-muted hover:text-ink hover:bg-white/5 transition-colors"
               >
                 {l.label}
-              </a>
+              </Link>
             ))}
-            <a
-              href="/#contact"
-              onClick={() => setOpen(false)}
+            <Link
+              href="/enquire"
               className="btn-neon mt-2 transition-transform duration-300 active:scale-95"
             >
-              Contact Us
-            </a>
+              Enquire Now
+            </Link>
           </div>
         </div>
       )}

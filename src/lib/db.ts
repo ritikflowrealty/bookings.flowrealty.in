@@ -69,6 +69,9 @@ export async function ensureSchema(): Promise<void> {
         await execMultiple(db, seed);
       }
     }
+
+    // Run additive seeds (idempotent via INSERT OR IGNORE)
+    await runSeeds(db);
   })().catch((err) => {
     _bootstrapped = null;
     throw err;
@@ -78,7 +81,8 @@ export async function ensureSchema(): Promise<void> {
 
 /**
  * Additive migrations. Each ALTER TABLE is wrapped in try/catch so it's safe
- * to run repeatedly (column already exists = no-op).
+ * to run repeatedly (column already exists = no-op). Also runs SQL files
+ * from db/migrations/ in alphabetical order, tracked in `schema_migrations`.
  */
 async function runMigrations(db: Client): Promise<void> {
   const addColumns = [
@@ -91,6 +95,16 @@ async function runMigrations(db: Client): Promise<void> {
     `ALTER TABLE projects ADD COLUMN trust_point_1 TEXT DEFAULT ''`,
     `ALTER TABLE projects ADD COLUMN trust_point_2 TEXT DEFAULT ''`,
     `ALTER TABLE projects ADD COLUMN trust_point_3 TEXT DEFAULT ''`,
+    // Main-site expansion: extra project fields used by SEO landing pages
+    `ALTER TABLE projects ADD COLUMN starting_price INTEGER DEFAULT 0`,
+    `ALTER TABLE projects ADD COLUMN configurations_summary TEXT DEFAULT ''`,
+    `ALTER TABLE projects ADD COLUMN possession_date TEXT DEFAULT ''`,
+    `ALTER TABLE projects ADD COLUMN rera_number TEXT DEFAULT ''`,
+    `ALTER TABLE projects ADD COLUMN gallery_urls TEXT DEFAULT ''`, // JSON array
+    `ALTER TABLE projects ADD COLUMN amenities TEXT DEFAULT ''`,    // JSON array
+    `ALTER TABLE projects ADD COLUMN locality TEXT DEFAULT ''`,
+    `ALTER TABLE projects ADD COLUMN meta_title TEXT DEFAULT ''`,
+    `ALTER TABLE projects ADD COLUMN meta_description TEXT DEFAULT ''`,
   ];
   for (const sql of addColumns) {
     try {
@@ -98,6 +112,80 @@ async function runMigrations(db: Client): Promise<void> {
     } catch {
       // Column already exists, safe to ignore
     }
+  }
+
+  // File-based migrations (idempotent SQL with IF NOT EXISTS / safe ALTER)
+  await runFileMigrations(db);
+}
+
+async function runFileMigrations(db: Client): Promise<void> {
+  // Track which migration files have been applied
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      filename TEXT PRIMARY KEY,
+      applied_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )
+  `);
+
+  const migrationsDir = path.join(process.cwd(), 'db', 'migrations');
+  if (!fs.existsSync(migrationsDir)) return;
+
+  const files = fs
+    .readdirSync(migrationsDir)
+    .filter((f) => f.endsWith('.sql'))
+    .sort();
+
+  const applied = await db.execute(`SELECT filename FROM schema_migrations`);
+  const appliedSet = new Set(
+    applied.rows.map((r) => (r as Record<string, unknown>).filename as string)
+  );
+
+  for (const f of files) {
+    if (appliedSet.has(f)) continue;
+    const sql = fs.readFileSync(path.join(migrationsDir, f), 'utf8');
+    await execMultiple(db, sql);
+    await db.execute({
+      sql: `INSERT INTO schema_migrations (filename) VALUES (?)`,
+      args: [f],
+    });
+    console.log(`[migrations] applied: ${f}`);
+  }
+}
+
+/**
+ * Idempotent seeds. Each file is applied at most once and tracked in
+ * `schema_seeds`. Use INSERT OR IGNORE inside seed files.
+ */
+async function runSeeds(db: Client): Promise<void> {
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS schema_seeds (
+      filename TEXT PRIMARY KEY,
+      applied_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )
+  `);
+
+  const seedsDir = path.join(process.cwd(), 'db', 'seeds');
+  if (!fs.existsSync(seedsDir)) return;
+
+  const files = fs
+    .readdirSync(seedsDir)
+    .filter((f) => f.endsWith('.sql'))
+    .sort();
+
+  const applied = await db.execute(`SELECT filename FROM schema_seeds`);
+  const appliedSet = new Set(
+    applied.rows.map((r) => (r as Record<string, unknown>).filename as string)
+  );
+
+  for (const f of files) {
+    if (appliedSet.has(f)) continue;
+    const sql = fs.readFileSync(path.join(seedsDir, f), 'utf8');
+    await execMultiple(db, sql);
+    await db.execute({
+      sql: `INSERT INTO schema_seeds (filename) VALUES (?)`,
+      args: [f],
+    });
+    console.log(`[seeds] applied: ${f}`);
   }
 }
 
