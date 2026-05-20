@@ -22,6 +22,8 @@ type Editable = {
   cashfree_app_id: string;
   cashfree_secret_key_new: string;
   cashfree_mode: string;
+  crm_endpoint: string;
+  crm_form_data: string;
 };
 
 const empty: Editable = {
@@ -43,6 +45,8 @@ const empty: Editable = {
   cashfree_app_id: '',
   cashfree_secret_key_new: '',
   cashfree_mode: 'test',
+  crm_endpoint: '',
+  crm_form_data: '',
 };
 
 export function ProjectEditor({
@@ -78,6 +82,8 @@ export function ProjectEditor({
           cashfree_app_id: project.cashfree_app_id || '',
           cashfree_secret_key_new: '',
           cashfree_mode: project.cashfree_mode || 'test',
+          crm_endpoint: project.crm_endpoint || '',
+          crm_form_data: project.crm_form_data || '',
         }
       : empty
   );
@@ -116,6 +122,8 @@ export function ProjectEditor({
         razorpay_key_id: form.razorpay_key_id,
         cashfree_app_id: form.cashfree_app_id,
         cashfree_mode: form.cashfree_mode,
+        crm_endpoint: form.crm_endpoint,
+        crm_form_data: form.crm_form_data,
       };
       if (form.razorpay_key_secret_new) {
         payload.razorpay_key_secret = form.razorpay_key_secret_new;
@@ -308,6 +316,27 @@ export function ProjectEditor({
               </div>
             </>
           )}
+
+          {/* External CRM integration */}
+          <div className="sm:col-span-2 mt-2 pt-4 border-t border-white/10">
+            <p className="label">External CRM (optional)</p>
+            <p className="text-xs text-ink-dim mt-1">
+              When a CP submits a lead for this project, the system also POSTs to this endpoint.
+              Use {'{{phone}}'} and {'{{name}}'} as placeholders in the form data JSON.
+            </p>
+          </div>
+          <Input
+            label="CRM Endpoint URL"
+            value={form.crm_endpoint || ''}
+            onChange={(v) => set('crm_endpoint', v)}
+            placeholder="https://...totalityre.com/api/v1.0/firsthello.php"
+            full
+          />
+          <Textarea
+            label="CRM Form Data (JSON)"
+            value={form.crm_form_data || ''}
+            onChange={(v) => set('crm_form_data', v)}
+          />
         </div>
 
         {error && (

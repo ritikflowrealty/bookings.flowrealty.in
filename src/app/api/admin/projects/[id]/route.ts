@@ -60,6 +60,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const cashfree_active = cashfree_app_id && cashfree_secret_key ? 1 : 0;
   const cashfree_mode = body.cashfree_mode === 'production' ? 'production' : 'test';
 
+  // External CRM
+  const crm_endpoint = sanitizeText(body.crm_endpoint ?? (row as any).crm_endpoint ?? '', 500);
+  const crm_form_data = sanitizeText(body.crm_form_data ?? (row as any).crm_form_data ?? '', 5000);
+
   // Toggles
   const is_visible = body.is_visible !== undefined ? (body.is_visible ? 1 : 0) : row.is_visible;
   const booking_enabled =
@@ -91,6 +95,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             payment_provider = ?,
             razorpay_key_id = ?, razorpay_key_secret = ?, razorpay_active = ?,
             cashfree_app_id = ?, cashfree_secret_key = ?, cashfree_active = ?, cashfree_mode = ?,
+            crm_endpoint = ?, crm_form_data = ?,
             is_visible = ?, booking_enabled = ?, payment_enabled = ?,
             updated_at = datetime('now')
           WHERE id = ?`,
@@ -101,6 +106,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       payment_provider,
       razorpay_key_id, razorpay_key_secret, razorpay_active,
       cashfree_app_id, cashfree_secret_key, cashfree_active, cashfree_mode,
+      crm_endpoint, crm_form_data,
       is_visible, booking_enabled, payment_enabled,
       id,
     ],
