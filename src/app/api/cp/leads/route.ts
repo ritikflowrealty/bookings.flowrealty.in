@@ -139,13 +139,11 @@ async function pushToExternalCrm(args: {
     ],
   };
 
-  const resp = await fetch('https://api.totalityre.com/api/v1.0/leads', {
+  const resp = await fetch(`https://realtyx.totalityre.com/api/leadsapi_v2.php?accesstoken=${encodeURIComponent(args.accessToken)}&accessapikey=${encodeURIComponent(args.apiKey)}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
-      AccessToken: args.accessToken,
-      AccessAPIkey: args.apiKey,
     },
     body: JSON.stringify(payload),
   });
