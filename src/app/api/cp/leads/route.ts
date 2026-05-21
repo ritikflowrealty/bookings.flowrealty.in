@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
 /**
  * Pushes lead to Totalityre CRM.
  * Only needs Access Token + Access API Key per project.
- * Source = "Channel Partner" with CP name and phone in Notes.
+ * Source = "CP" with CP name in Notes.
  */
 async function pushToExternalCrm(args: {
   accessToken: string;
@@ -122,31 +122,30 @@ async function pushToExternalCrm(args: {
   cpPhone: string;
 }): Promise<void> {
   const payload = {
-    LeadDetails: [
-      { Attribute: 'FirstName', Value: args.prospectFirstName },
-      { Attribute: 'LastName', Value: args.prospectLastName },
-      { Attribute: 'LeadStatusSecondary', Value: 'New' },
-      { Attribute: 'countrycode', Value: '+91' },
-      { Attribute: 'Mobile', Value: args.prospectPhone },
-      { Attribute: 'Email', Value: args.prospectEmail || '' },
-    ],
-    ProjectDetails: [
-      { Attribute: 'Project', Value: args.projectName },
-      { Attribute: 'LeadSource', Value: 'Channel Partner' },
-      { Attribute: 'LeadSecondarySource', Value: args.cpName },
-      { Attribute: 'LeadTertiarySource', Value: args.cpPhone },
-      { Attribute: 'Notes', Value: `CP: ${args.cpName} (${args.cpPhone})` },
-    ],
+    'first-name': args.prospectFirstName,
+    'last-name': args.prospectLastName,
+    email_id: args.prospectEmail || '',
+    phone: args.prospectPhone,
+    form_name: '',
+    Project: args.projectName,
+    LeadStatusSecondary: 'New',
+    policycode: '',
+    LeadSource: 'CP',
+    LeadSecondarySource: 'Digital',
+    LeadTertiarySource: 'Bro Portal',
+    Trackercode: '',
+    gclid: '',
+    Notes: `CP: ${args.cpName} (${args.cpPhone})`,
   };
 
-  const resp = await fetch(`https://realtyx.totalityre.com/api/leadsapi_v2.php?accesstoken=${encodeURIComponent(args.accessToken)}&accessapikey=${encodeURIComponent(args.apiKey)}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify(payload),
-  });
+  const resp = await fetch(
+    `https://realtyx.totalityre.com/api/leadsapiwp.php?accesstoken=${encodeURIComponent(args.accessToken)}&accessapikey=${encodeURIComponent(args.apiKey)}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }
+  );
 
   if (!resp.ok) {
     const text = await resp.text().catch(() => '');
