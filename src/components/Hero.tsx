@@ -13,6 +13,33 @@ export async function Hero() {
     'Hand-picked homes from India\'s most respected developers. Reserve the unit you love today. Our sales team takes it from there.'
   );
 
+  // Full-viewport video banner mode (like Rustomjee)
+  if (videoUrl) {
+    return (
+      <section className="relative">
+        <HeroVideo videoUrl={videoUrl} posterUrl={posterUrl} />
+        {/* Overlay content centered on the video */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-5 pointer-events-none">
+          <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl leading-[1.08] tracking-tight text-white drop-shadow-lg reveal max-w-4xl">
+            {renderHeadline(headline)}
+          </h1>
+          <p className="mt-4 max-w-2xl text-sm sm:text-base lg:text-lg text-white/80 leading-relaxed reveal-delayed">
+            {subheadline}
+          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3 pointer-events-auto reveal-delayed" style={{ animationDelay: '240ms' }}>
+            <a href="/projects" className="btn-neon transition-transform duration-300 hover:scale-105 active:scale-95">
+              See available homes
+            </a>
+            <a href="#why" className="btn-ghost border-white/30 text-white hover:bg-white/10 transition-transform duration-300 hover:scale-105 active:scale-95">
+              Why Choose Us
+            </a>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Fallback: split layout with building image
   return (
     <section className="relative overflow-hidden">
       <div
@@ -36,35 +63,17 @@ export async function Hero() {
             <p className="mt-6 max-w-xl text-base sm:text-lg text-ink-muted leading-relaxed reveal-delayed">
               {subheadline}
             </p>
-
-            <div
-              className="mt-9 flex flex-wrap items-center gap-3 reveal-delayed"
-              style={{ animationDelay: '240ms' }}
-            >
-              <a
-                href="/projects"
-                className="btn-neon transition-transform duration-300 hover:scale-105 active:scale-95"
-              >
+            <div className="mt-9 flex flex-wrap items-center gap-3 reveal-delayed" style={{ animationDelay: '240ms' }}>
+              <a href="/projects" className="btn-neon transition-transform duration-300 hover:scale-105 active:scale-95">
                 See available homes
               </a>
-              <a
-                href="#why"
-                className="btn-ghost transition-transform duration-300 hover:scale-105 active:scale-95"
-              >
+              <a href="#why" className="btn-ghost transition-transform duration-300 hover:scale-105 active:scale-95">
                 Why Choose Us
               </a>
             </div>
           </div>
-
-          <div
-            className="relative reveal-delayed max-h-[460px] aspect-square mx-auto w-full"
-            style={{ animationDelay: '300ms' }}
-          >
-            {videoUrl ? (
-              <HeroVideo videoUrl={videoUrl} posterUrl={posterUrl} />
-            ) : (
-              <HeroBuilding />
-            )}
+          <div className="relative reveal-delayed max-h-[460px] aspect-square mx-auto w-full" style={{ animationDelay: '300ms' }}>
+            <HeroBuilding />
           </div>
         </div>
       </div>
@@ -72,10 +81,6 @@ export async function Hero() {
   );
 }
 
-/**
- * Render headline with the last sentence emphasized in neon gradient if it
- * starts with "Yours, in a tap." pattern (admin can change this freely).
- */
 function renderHeadline(h: string) {
   const parts = h.split('.');
   if (parts.length <= 1) return h;

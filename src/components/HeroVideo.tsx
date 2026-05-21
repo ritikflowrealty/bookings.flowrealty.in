@@ -3,9 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 
 /**
- * Autoplay HD background video with poster fallback. Muted is enforced because
- * browsers block autoplay with audio. Falls back to the building image
- * component if no video is configured.
+ * Full-viewport autoplay video banner. Covers 100vh minus navbar height.
+ * Video uses object-fit:cover so it fills without distortion on any screen.
  */
 export function HeroVideo({
   videoUrl,
@@ -26,7 +25,7 @@ export function HeroVideo({
   }, []);
 
   return (
-    <div className="relative w-full h-full overflow-hidden rounded-3xl">
+    <div className="relative w-full h-[calc(100vh-72px)] overflow-hidden">
       <video
         ref={ref}
         src={videoUrl}
@@ -36,13 +35,14 @@ export function HeroVideo({
         loop
         playsInline
         preload="metadata"
-        className={`w-full h-full object-cover transition-opacity duration-700 ${ready ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${ready ? 'opacity-100' : 'opacity-0'}`}
       />
       {posterUrl && !ready && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={posterUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
       )}
-      <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent pointer-events-none" />
+      {/* Dark overlay for text readability */}
+      <div aria-hidden className="absolute inset-0 bg-black/40 pointer-events-none" />
     </div>
   );
 }
