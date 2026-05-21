@@ -126,16 +126,12 @@ async function pushToExternalCrm(args: {
     'last-name': args.prospectLastName,
     email_id: args.prospectEmail || '',
     phone: args.prospectPhone,
-    form_name: '',
     Project: args.projectName,
     LeadStatusSecondary: 'New',
-    policycode: '',
     LeadSource: 'CP',
-    LeadSecondarySource: 'Digital',
+    LeadSecondarySource: args.cpName,
     LeadTertiarySource: 'Bro Portal',
-    Trackercode: '',
-    gclid: '',
-    Notes: `CP: ${args.cpName} (${args.cpPhone})`,
+    Notes: `Submitted by ${args.cpName} (${args.cpPhone})`,
   };
 
   const resp = await fetch(
