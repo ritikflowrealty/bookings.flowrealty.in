@@ -35,7 +35,7 @@ export function RegisterInterest() {
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="text-center max-w-2xl mx-auto">
           <span className="chip">Register Your Interest</span>
-          <h2 className="mt-4 font-display text-4xl sm:text-5xl tracking-tight">
+          <h2 className="mt-4 font-heading text-3xl sm:text-4xl lg:text-5xl tracking-tight">
             How can we help you?
           </h2>
         </div>

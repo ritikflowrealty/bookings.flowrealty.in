@@ -6,9 +6,12 @@ import { usePathname } from 'next/navigation';
 
 const links = [
   { href: '/', label: 'Home' },
+  { href: '/about', label: 'About' },
+  { href: '/services', label: 'Services' },
+  { href: '/case-studies', label: 'Case Studies' },
   { href: '/projects', label: 'Projects' },
-  { href: '/team', label: 'Team Flow' },
-  { href: '/bro-portal', label: 'Bro Portal' },
+  { href: '/life-at-flow', label: 'Life at Flow' },
+  { href: '/blogs', label: 'Blogs' },
 ];
 
 export function Navbar() {

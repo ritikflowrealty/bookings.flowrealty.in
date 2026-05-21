@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 /**
  * Full-viewport autoplay video banner. Covers 100vh minus navbar height.
  * Video uses object-fit:cover so it fills without distortion on any screen.
+ * No dark overlay — video plays in its original form.
  */
 export function HeroVideo({
   videoUrl,
@@ -41,8 +42,7 @@ export function HeroVideo({
         // eslint-disable-next-line @next/next/no-img-element
         <img src={posterUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
       )}
-      {/* Dark overlay for text readability */}
-      <div aria-hidden className="absolute inset-0 bg-black/40 pointer-events-none" />
+      {/* No dark overlay — video plays in original form */}
     </div>
   );
 }

@@ -23,7 +23,7 @@ export async function CaseStudiesPreview() {
           <div className="flex items-end justify-between gap-6 flex-wrap">
             <div>
               <span className="chip">Case Studies</span>
-              <h2 className="mt-4 font-display text-4xl sm:text-5xl tracking-tight">
+              <h2 className="mt-4 font-heading text-3xl sm:text-4xl lg:text-5xl tracking-tight">
                 See how we did it.
               </h2>
             </div>

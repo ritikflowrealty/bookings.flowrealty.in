@@ -25,8 +25,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
-        display: ['var(--font-display)', 'Georgia', 'serif'],
+        sans: ['var(--font-sans)', 'Poppins', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'EB Garamond', 'Georgia', 'serif'],
+        heading: ['"Aptos Narrow"', 'var(--font-sans)', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
         'neon-gradient':

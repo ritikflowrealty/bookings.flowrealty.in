@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { SectionReveal } from './SectionReveal';
 
 const services = [
@@ -18,13 +19,18 @@ const services = [
   },
   {
     title: 'Channel Partner Synergy',
-    body: '1000+ CP network activated per project. Onboarding, training, incentive design.',
+    body: '2000+ CP network activated per project. Onboarding, training, incentive design.',
     icon: '🤝',
   },
   {
     title: 'CRM & Tech',
     body: 'Lead management, walk-in tracking, conversion analytics. Real-time dashboards for developers.',
     icon: '💻',
+  },
+  {
+    title: 'Terra by Flow',
+    body: 'Specialised vertical for plotted developments. Land monetisation and plot sales execution.',
+    icon: '🌍',
   },
 ];
 
@@ -33,13 +39,20 @@ export function ServicesSection() {
     <section className="py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <SectionReveal>
-          <span className="chip">Our Services</span>
-          <h2 className="mt-4 font-display text-4xl sm:text-5xl tracking-tight">
-            We sell what others can&rsquo;t.
-          </h2>
-          <p className="mt-3 max-w-2xl text-ink-muted leading-relaxed">
-            From cashflow stress to sold-out projects. India&rsquo;s #1 sales and marketing outsourcing partner for residential real estate.
-          </p>
+          <div className="flex items-end justify-between gap-6 flex-wrap">
+            <div>
+              <span className="chip">Our Services</span>
+              <h2 className="mt-4 font-heading text-3xl sm:text-4xl lg:text-5xl tracking-tight">
+                We sell what others can&rsquo;t.
+              </h2>
+              <p className="mt-3 max-w-2xl text-ink-muted leading-relaxed">
+                From cashflow stress to sold-out projects. India&rsquo;s #1 sales and marketing outsourcing partner for residential real estate.
+              </p>
+            </div>
+            <Link href="/services" className="btn-ghost text-sm">
+              All services →
+            </Link>
+          </div>
         </SectionReveal>
 
         <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -50,7 +63,7 @@ export function ServicesSection() {
               style={{ animationDelay: `${i * 70}ms` }}
             >
               <span className="text-3xl group-hover:scale-110 transition-transform inline-block">{s.icon}</span>
-              <h3 className="mt-4 font-display text-xl">{s.title}</h3>
+              <h3 className="mt-4 font-heading text-xl">{s.title}</h3>
               <p className="mt-2 text-sm text-ink-muted leading-relaxed">{s.body}</p>
             </div>
           ))}

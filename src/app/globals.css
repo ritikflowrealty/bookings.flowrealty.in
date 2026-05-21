@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Aptos Narrow — system font on Windows, fallback to sans */
+@font-face {
+  font-family: 'Aptos Narrow';
+  src: local('Aptos Narrow'), local('AptosNarrow');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
 :root {
   color-scheme: dark;
 }
@@ -199,3 +207,78 @@ html {
   .reveal, .reveal-delayed { animation: none; opacity: 1; }
   * { animation-duration: 0ms !important; transition-duration: 0ms !important; }
 }
+
+/* Advanced animations */
+@keyframes slideInFromLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInFromRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes blurIn {
+  from { opacity: 0; filter: blur(8px); }
+  to { opacity: 1; filter: blur(0); }
+}
+.animate-slide-left {
+  animation: slideInFromLeft 800ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.animate-slide-right {
+  animation: slideInFromRight 800ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.animate-scale-in {
+  animation: scaleIn 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.animate-blur-in {
+  animation: blurIn 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Magnetic hover effect for cards */
+.magnetic-hover {
+  transition: transform 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.magnetic-hover:hover {
+  transform: translateY(-4px) scale(1.01);
+}
+
+/* Gradient border animation */
+.gradient-border {
+  position: relative;
+  border-radius: 1.5rem;
+  overflow: hidden;
+}
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(123,46,255,0.4), rgba(255,60,130,0.4), rgba(255,106,0,0.4));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Text gradient animation */
+.text-gradient-animate {
+  background: linear-gradient(135deg, #7b2eff, #d92eff, #ff3c82, #ff6a00, #7b2eff);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradientShift 6s ease-in-out infinite;
+}
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Parallax depth layers */
+.parallax-slow { will-change: transform; }
+.parallax-fast { will-change: transform; }

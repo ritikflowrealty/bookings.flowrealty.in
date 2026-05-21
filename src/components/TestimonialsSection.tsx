@@ -20,7 +20,7 @@ export async function TestimonialsSection() {
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <SectionReveal>
           <span className="chip">Client Speak</span>
-          <h2 className="mt-4 font-display text-4xl sm:text-5xl tracking-tight">
+          <h2 className="mt-4 font-heading text-3xl sm:text-4xl lg:text-5xl tracking-tight">
             What our partners say.
           </h2>
         </SectionReveal>

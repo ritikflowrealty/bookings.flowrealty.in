@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Onest, Fraunces } from 'next/font/google';
+import { EB_Garamond, Poppins } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { SmoothScroll } from '@/components/SmoothScroll';
@@ -7,14 +7,14 @@ import { PageReveal } from '@/components/PageReveal';
 import { AuthProvider } from '@/components/AuthProvider';
 import './globals.css';
 
-const onest = Onest({
+const poppins = Poppins({
   subsets: ['latin'],
   variable: '--font-sans',
-  weight: ['400', '500', '600', '700'],
+  weight: ['300', '400', '500', '600', '700'],
   display: 'swap',
 });
 
-const fraunces = Fraunces({
+const ebGaramond = EB_Garamond({
   subsets: ['latin'],
   variable: '--font-display',
   weight: ['400', '500', '600', '700'],
@@ -66,7 +66,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${onest.variable} ${fraunces.variable}`}>
+    <html lang="en" className={`${poppins.variable} ${ebGaramond.variable}`}>
       <head>
         <link rel="icon" href="/favicon.jpg" type="image/jpeg" />
         <link rel="apple-touch-icon" href="/favicon.jpg" />
