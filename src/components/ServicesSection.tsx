@@ -65,7 +65,7 @@ export function ServicesSection() {
         >
           <div>
             <span className="chip">Our Services</span>
-            <h2 className="mt-4 font-heading text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.05]">
+            <h2 className="mt-4 font-heading uppercase text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.05]">
               We sell what others can&rsquo;t.
             </h2>
             <p className="mt-3 max-w-2xl text-ink-muted leading-relaxed">
@@ -139,10 +139,11 @@ export function ServicesSection() {
             ))}
           </div>
 
-          {/* Sticky preview image */}
+          {/* Preview image — fills the full height of the service list on desktop */}
           <div className="lg:col-span-5 hidden lg:block">
-            <div className="sticky top-24">
-              <div className="relative aspect-[4/5] rounded-3xl overflow-hidden glass-strong shadow-card">
+            <div className="h-full relative">
+              <div className="sticky top-24">
+                <div className="relative aspect-[4/5] rounded-3xl overflow-hidden glass-strong shadow-card">
                 {services.map((s, i) => (
                   <motion.div
                     key={s.number}
@@ -174,10 +175,11 @@ export function ServicesSection() {
                   <p className="text-xs uppercase tracking-[0.18em] text-ink-muted">
                     {services[activeIdx].number} / 06
                   </p>
-                  <h4 className="mt-1 font-display text-2xl text-ink">
+                  <h4 className="mt-1 font-heading uppercase text-2xl text-ink">
                     {services[activeIdx].title}
                   </h4>
                 </motion.div>
+                </div>
               </div>
             </div>
           </div>

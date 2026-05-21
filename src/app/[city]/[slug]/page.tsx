@@ -77,10 +77,10 @@ export default async function CityFilterPage({ params }: { params: Promise<Route
   }
 
   const [allLocations, configurations, budgets, rows] = await Promise.all([
-    listLocations(city),
-    listConfigurations(city),
-    listBudgets(city),
-    listProjectsForFilter(filter),
+    listLocations(city).catch(() => []),
+    listConfigurations(city).catch(() => []),
+    listBudgets(city).catch(() => []),
+    listProjectsForFilter(filter).catch(() => [] as Record<string, unknown>[]),
   ]);
 
   const breadcrumbs = [
@@ -129,7 +129,7 @@ export default async function CityFilterPage({ params }: { params: Promise<Route
         />
 
         <ProjectGrid
-          rows={rows as unknown as ProjectRow[]}
+          rows={(rows || []) as unknown as ProjectRow[]}
           heading={`${label} available in ${city}`}
         />
 

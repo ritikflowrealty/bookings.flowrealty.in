@@ -3,6 +3,7 @@ import { Footer } from '@/components/Footer';
 import { SectionReveal } from '@/components/SectionReveal';
 import { InlineEnquireCard } from '@/components/InlineEnquireCard';
 import { getSettings, setting } from '@/lib/settings';
+import { ensureSchema, getDb } from '@/lib/db';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -21,6 +22,14 @@ export default async function AboutPage() {
   const cpSize = setting(s, 'cp_distribution_size', '2000');
   const teamSize = setting(s, 'team_size', '80');
   const developersCount = setting(s, 'developers_count', '15');
+
+  await ensureSchema();
+  const fr = await getDb().execute(`
+    SELECT id, name, designation, photo_url, bio, linkedin_url
+    FROM team_members WHERE is_published = 1 AND category = 'cofounder'
+    ORDER BY display_order, name
+  `);
+  const founders = fr.rows as unknown as { id: number; name: string; designation: string; photo_url: string; bio: string; linkedin_url: string }[];
 
   return (
     <>
@@ -57,39 +66,58 @@ export default async function AboutPage() {
             </p>
           </SectionReveal>
 
-          {/* Founder Profile */}
-          <SectionReveal className="mt-16">
-            <h2 className="font-heading text-3xl tracking-tight">Founder</h2>
-            <div className="mt-6 glass-strong rounded-3xl p-8">
-              <div className="flex flex-col sm:flex-row gap-6">
-                <div className="flex-shrink-0 w-24 h-24 rounded-2xl bg-gradient-to-br from-neon-purple/30 to-neon-orange/30 flex items-center justify-center">
-                  <span className="font-display text-2xl text-ink">AA</span>
-                </div>
-                <div>
-                  <h3 className="font-display text-2xl">Arun Anand</h3>
-                  <p className="text-sm text-neon-purple">Co-founder</p>
-                  <p className="mt-3 text-ink-muted leading-relaxed">
-                    NIT & NMIMS alumnus with 16+ years of experience in real estate across Lodha Group,
-                    Embassy Group, and Shriram Properties. Having been on both sides — developer and
-                    sales partner — Arun built Flow to solve the cashflow problem he saw every day.
-                  </p>
-                  <div className="mt-4 flex items-center gap-4">
-                    <a
-                      href="https://www.linkedin.com/in/aaborad/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm text-ink-dim hover:text-ink transition-colors"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                      </svg>
-                      LinkedIn
-                    </a>
+          {/* Founders */}
+          {founders.length > 0 && (
+            <SectionReveal className="mt-16">
+              <h2 className="font-heading text-3xl tracking-tight">{founders.length === 1 ? 'Founder' : 'Co-founders'}</h2>
+              <div className={`mt-6 grid gap-6 ${founders.length === 1 ? '' : 'md:grid-cols-2'}`}>
+                {founders.map((f) => (
+                  <div key={f.id} className="glass-strong rounded-3xl p-6 sm:p-8">
+                    <div className="flex flex-col sm:flex-row gap-6">
+                      {f.photo_url ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={f.photo_url}
+                          alt={f.name}
+                          className="flex-shrink-0 w-24 h-24 rounded-2xl object-cover ring-1 ring-white/10"
+                        />
+                      ) : (
+                        <div className="flex-shrink-0 w-24 h-24 rounded-2xl bg-gradient-to-br from-neon-purple/30 to-neon-orange/30 flex items-center justify-center">
+                          <span className="font-display text-2xl text-ink">
+                            {f.name
+                              .split(' ')
+                              .map((s) => s[0])
+                              .slice(0, 2)
+                              .join('')}
+                          </span>
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <h3 className="font-display text-2xl">{f.name}</h3>
+                        <p className="text-sm text-neon-purple">{f.designation}</p>
+                        {f.bio && <p className="mt-3 text-ink-muted leading-relaxed">{f.bio}</p>}
+                        {f.linkedin_url && (
+                          <div className="mt-4 flex items-center gap-4">
+                            <a
+                              href={f.linkedin_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 text-sm text-ink-dim hover:text-ink transition-colors"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                              </svg>
+                              LinkedIn
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
-            </div>
-          </SectionReveal>
+            </SectionReveal>
+          )}
 
           {/* Stats */}
           <SectionReveal className="mt-16">

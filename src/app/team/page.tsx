@@ -2,6 +2,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SectionReveal } from '@/components/SectionReveal';
 import { TeamMemberCard } from '@/components/TeamMemberCard';
+import { RegisterInterest } from '@/components/RegisterInterest';
 import { ensureSchema, getDb } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -93,6 +94,7 @@ export default async function TeamPage() {
             </div>
           )}
         </div>
+        <RegisterInterest />
       </main>
       <Footer />
     </>

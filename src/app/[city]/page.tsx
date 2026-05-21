@@ -49,12 +49,12 @@ export default async function CityHubPage({ params }: { params: Promise<RoutePar
   if (!city) notFound();
 
   const [locations, configurations, budgets, projectRows] = await Promise.all([
-    listLocations(city),
-    listConfigurations(city),
-    listBudgets(city),
-    listProjectsForFilter({ city }),
+    listLocations(city).catch(() => []),
+    listConfigurations(city).catch(() => []),
+    listBudgets(city).catch(() => []),
+    listProjectsForFilter({ city }).catch(() => [] as Record<string, unknown>[]),
   ]);
-  const rows = projectRows as unknown as ProjectRow[];
+  const rows = (projectRows || []) as unknown as ProjectRow[];
 
   const breadcrumbs = [
     { label: 'Home', href: '/' },

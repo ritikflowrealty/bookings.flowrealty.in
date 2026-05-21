@@ -27,14 +27,16 @@ function configs(): Record<string, EntityConfig> {
     team: {
       table: 'team_members',
       selectColumns: '*',
-      insertColumns: ['slug', 'name', 'designation', 'category', 'photo_url', 'bio', 'linkedin_url', 'display_order', 'is_published'],
+      insertColumns: ['slug', 'name', 'designation', 'category', 'photo_url', 'cutout_url', 'bio', 'pedigree', 'linkedin_url', 'display_order', 'is_published'],
       buildArgs: (b) => [
         slugify(sanitizeText(b.slug || b.name, 80)),
         sanitizeText(b.name, 120),
         sanitizeText(b.designation, 120),
         ['leadership', 'cofounder', 'team'].includes(b.category) ? b.category : 'team',
         sanitizeText(b.photo_url || '', 500),
-        sanitizeText(b.bio || '', 1000),
+        sanitizeText(b.cutout_url || '', 500),
+        sanitizeText(b.bio || '', 2000),
+        sanitizeText(b.pedigree || '', 500),
         sanitizeText(b.linkedin_url || '', 500),
         Number(b.display_order || 0),
         b.is_published === false ? 0 : 1,
@@ -148,6 +150,20 @@ function configs(): Record<string, EntityConfig> {
         b.is_published === false ? 0 : 1,
       ],
       orderBy: 'title',
+    },
+    partners: {
+      table: 'partners',
+      selectColumns: '*',
+      insertColumns: ['name', 'category', 'logo_url', 'website_url', 'display_order', 'is_published'],
+      buildArgs: (b) => [
+        sanitizeText(b.name, 120),
+        ['developer', 'banking', 'channel'].includes(b.category) ? b.category : 'developer',
+        sanitizeText(b.logo_url || '', 500),
+        sanitizeText(b.website_url || '', 500),
+        Number(b.display_order || 0),
+        b.is_published === false ? 0 : 1,
+      ],
+      orderBy: 'category, display_order, name',
     },
   };
 }

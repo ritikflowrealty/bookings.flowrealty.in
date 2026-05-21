@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 const TABLE_MAP: Record<string, { table: string; allowedColumns: string[] }> = {
   team: {
     table: 'team_members',
-    allowedColumns: ['name', 'designation', 'category', 'photo_url', 'bio', 'linkedin_url', 'display_order', 'is_published'],
+    allowedColumns: ['name', 'designation', 'category', 'photo_url', 'cutout_url', 'bio', 'pedigree', 'linkedin_url', 'display_order', 'is_published'],
   },
   awards: {
     table: 'awards',
@@ -38,10 +38,14 @@ const TABLE_MAP: Record<string, { table: string; allowedColumns: string[] }> = {
     table: 'pages',
     allowedColumns: ['title', 'hero_image_url', 'hero_video_url', 'content', 'meta_title', 'meta_description', 'is_published'],
   },
+  partners: {
+    table: 'partners',
+    allowedColumns: ['name', 'category', 'logo_url', 'website_url', 'display_order', 'is_published'],
+  },
 };
 
 const SANITIZE_LIMITS: Record<string, number> = {
-  name: 120, designation: 120, photo_url: 500, bio: 1000, linkedin_url: 500,
+  name: 120, designation: 120, photo_url: 500, cutout_url: 500, bio: 2000, pedigree: 500, linkedin_url: 500,
   title: 200, awarding_body: 200, image_url: 500, description: 1000,
   category: 40, excerpt: 500, content: 100000, cover_image_url: 500, external_url: 500,
   author: 120, meta_title: 200, meta_description: 300, published_at: 30,
@@ -49,6 +53,7 @@ const SANITIZE_LIMITS: Record<string, number> = {
   hero_image_url: 500, hero_video_url: 500,
   metric_1_label: 80, metric_1_value: 40, metric_2_label: 80, metric_2_value: 40,
   metric_3_label: 80, metric_3_value: 40, company: 120,
+  logo_url: 500, website_url: 500,
 };
 
 function isNumberField(col: string): boolean {

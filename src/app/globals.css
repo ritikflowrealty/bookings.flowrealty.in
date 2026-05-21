@@ -282,3 +282,24 @@ html {
 /* Parallax depth layers */
 .parallax-slow { will-change: transform; }
 .parallax-fast { will-change: transform; }
+
+
+/* Brand convention: all hero/section/page-title display headings are UPPERCASE */
+h1,
+h2,
+.font-heading,
+.font-display {
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+
+/* But NOT inside content body (rich text), navbar links, breadcrumbs, etc. */
+.prose-content h1,
+.prose-content h2,
+.prose-content h3,
+nav h1,
+nav h2,
+nav .font-heading,
+nav .font-display {
+  text-transform: none;
+}

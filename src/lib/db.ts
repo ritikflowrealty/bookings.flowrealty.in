@@ -112,6 +112,9 @@ async function runMigrations(db: Client): Promise<void> {
     `ALTER TABLE projects ADD COLUMN crm_access_token TEXT DEFAULT ''`,
     `ALTER TABLE projects ADD COLUMN crm_api_key TEXT DEFAULT ''`,
     `ALTER TABLE projects ADD COLUMN crm_project_name TEXT DEFAULT ''`,
+    // Team member additions
+    `ALTER TABLE team_members ADD COLUMN cutout_url TEXT DEFAULT ''`,
+    `ALTER TABLE team_members ADD COLUMN pedigree TEXT DEFAULT ''`,
   ];
   for (const sql of addColumns) {
     try {
