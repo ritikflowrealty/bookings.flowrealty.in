@@ -8,10 +8,10 @@ const links = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
   { href: '/services', label: 'Services' },
-  { href: '/case-studies', label: 'Case Studies' },
+  { href: '/team', label: 'Team' },
   { href: '/projects', label: 'Projects' },
-  { href: '/life-at-flow', label: 'Life at Flow' },
-  { href: '/news', label: 'Blogs' },
+  { href: '/case-studies', label: 'Work' },
+  { href: '/news', label: 'Insights' },
 ];
 
 export function Navbar() {

@@ -27,17 +27,22 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://booking.flowrealty
 type RouteParams = { city: string; location: string };
 
 export async function generateMetadata({ params }: { params: Promise<RouteParams> }): Promise<Metadata> {
-  const { city: citySlug, location: locSlug } = await params;
-  const city = SUPPORTED_CITIES[citySlug];
-  const loc = await getLocationBySlug(locSlug);
-  if (!city || !loc || loc.city !== city) return {};
-  return {
-    title: loc.meta_title || `Apartments in ${loc.name}, ${city} | Flow Realty`,
-    description:
-      loc.meta_description ||
-      `Browse residential projects in ${loc.name}, ${city}. Verified by Flow Realty.`,
-    alternates: { canonical: `${SITE_URL}/${citySlug}/flats-in-${locSlug}/` },
-  };
+  try {
+    const { city: citySlug, location: locSlug } = await params;
+    const city = SUPPORTED_CITIES[citySlug];
+    if (!city) return {};
+    const loc = await getLocationBySlug(locSlug);
+    if (!loc || loc.city !== city) return {};
+    return {
+      title: loc.meta_title || `Apartments in ${loc.name}, ${city} | Flow Realty`,
+      description:
+        loc.meta_description ||
+        `Browse residential projects in ${loc.name}, ${city}. Verified by Flow Realty.`,
+      alternates: { canonical: `${SITE_URL}/${citySlug}/flats-in-${locSlug}/` },
+    };
+  } catch {
+    return {};
+  }
 }
 
 export const dynamic = 'force-dynamic';
@@ -51,11 +56,13 @@ export default async function LocationPage({ params }: { params: Promise<RoutePa
   const loc = await getLocationBySlug(locSlug);
   if (!loc || loc.city !== city) notFound();
 
+  // Defensive: each fetch is independent; if any fails, fall back to empty array
+  // so the page still renders rather than throwing a 500.
   const [allLocations, configurations, budgets, rows] = await Promise.all([
-    listLocations(city),
-    listConfigurations(city),
-    listBudgets(city),
-    listProjectsForFilter({ city, locationId: loc.id }),
+    listLocations(city).catch(() => []),
+    listConfigurations(city).catch(() => []),
+    listBudgets(city).catch(() => []),
+    listProjectsForFilter({ city, locationId: loc.id }).catch(() => [] as Record<string, unknown>[]),
   ]);
 
   const breadcrumbs = [
@@ -64,7 +71,7 @@ export default async function LocationPage({ params }: { params: Promise<RoutePa
     { label: loc.name },
   ];
 
-  const otherLocationLinks = allLocations
+  const otherLocationLinks = (allLocations || [])
     .filter((l) => l.slug !== loc.slug)
     .slice(0, 12)
     .map((l) => ({
@@ -72,12 +79,12 @@ export default async function LocationPage({ params }: { params: Promise<RoutePa
       label: `Flats in ${l.name}`,
     }));
 
-  const configLinks = configurations.map((c) => ({
+  const configLinks = (configurations || []).map((c) => ({
     href: `/${citySlug}/${c.slug}/`,
     label: c.label,
   }));
 
-  const budgetLinks = budgets.map((b) => ({
+  const budgetLinks = (budgets || []).map((b) => ({
     href: `/${citySlug}/${b.slug}/`,
     label: b.label,
   }));
@@ -101,9 +108,9 @@ export default async function LocationPage({ params }: { params: Promise<RoutePa
         />
 
         <ProjectGrid
-          rows={rows as unknown as ProjectRow[]}
+          rows={(rows || []) as unknown as ProjectRow[]}
           heading={`Projects in ${loc.name}`}
-          emptyMessage={`No live projects in ${loc.name} right now. Tell us what you\'re looking for and we\'ll alert you when we list one.`}
+          emptyMessage={`No live projects in ${loc.name} right now. Tell us what you are looking for and we'll alert you when we list one.`}
         />
 
         {configLinks.length > 0 && (

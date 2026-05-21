@@ -19,7 +19,7 @@ export async function WhyChooseUs() {
     },
     {
       title: 'Reserve in seconds',
-      body: 'Pick a unit. Pay the booking amount through Razorpay or Cashfree. Done. No paperwork, no waiting in a sales office, no follow-up calls before you even decide.',
+      body: 'Pick a unit. Pay the booking amount through Razorpay or Cashfree. Done. No paperwork, no waiting in a sales office, no follow-up calls before you decide.',
     },
     {
       title: 'A team that calls back',
@@ -36,7 +36,7 @@ export async function WhyChooseUs() {
   ];
 
   return (
-    <section id="why" className="relative py-20 lg:py-28">
+    <section id="why" className="relative py-14 lg:py-20">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="max-w-2xl">
           <span className="chip">Why Choose Us</span>

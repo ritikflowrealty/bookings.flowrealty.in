@@ -13,24 +13,24 @@ export async function Hero() {
     'Hand-picked homes from India\'s most respected developers. Reserve the unit you love today. Our sales team takes it from there.'
   );
 
-  // Full-viewport video banner mode — no overlay, buttons at bottom, 90% transparent
+  // Full-viewport video banner mode — no overlay, buttons at bottom
   if (videoUrl) {
     return (
       <section className="relative">
         <HeroVideo videoUrl={videoUrl} posterUrl={posterUrl} />
-        {/* Buttons positioned at the bottom of the video, 90% transparent */}
-        <div className="absolute bottom-12 left-0 right-0 flex flex-wrap items-center justify-center gap-4 pointer-events-auto z-10 px-5">
+        {/* Buttons positioned at the bottom of the video */}
+        <div className="absolute bottom-6 sm:bottom-12 left-0 right-0 flex flex-wrap items-center justify-center gap-3 sm:gap-4 pointer-events-auto z-10 px-5">
           <a
             href="/projects"
-            className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-medium text-white transition-all duration-300 hover:scale-105 active:scale-95 backdrop-blur-md"
-            style={{ background: 'rgba(123, 46, 255, 0.10)', border: '1px solid rgba(255,255,255,0.15)' }}
+            className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 rounded-full font-medium text-white text-sm sm:text-base transition-all duration-300 hover:scale-105 active:scale-95 backdrop-blur-md"
+            style={{ background: 'rgba(123, 46, 255, 0.18)', border: '1px solid rgba(255,255,255,0.18)' }}
           >
             See available homes
           </a>
           <a
             href="/#why"
-            className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-medium text-white transition-all duration-300 hover:scale-105 active:scale-95 backdrop-blur-md"
-            style={{ background: 'rgba(255, 255, 255, 0.10)', border: '1px solid rgba(255,255,255,0.15)' }}
+            className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 rounded-full font-medium text-white text-sm sm:text-base transition-all duration-300 hover:scale-105 active:scale-95 backdrop-blur-md"
+            style={{ background: 'rgba(255, 255, 255, 0.12)', border: '1px solid rgba(255,255,255,0.18)' }}
           >
             Why Choose Us
           </a>

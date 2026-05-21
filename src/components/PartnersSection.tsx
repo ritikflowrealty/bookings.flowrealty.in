@@ -18,7 +18,7 @@ const partners = [
 
 export function PartnersSection() {
   return (
-    <section className="py-20 lg:py-28 overflow-hidden">
+    <section className="py-14 lg:py-20 overflow-hidden">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <SectionReveal>
           <span className="chip">Our Partners</span>

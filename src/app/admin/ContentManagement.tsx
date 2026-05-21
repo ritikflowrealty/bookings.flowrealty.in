@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { RichTextEditor } from '@/components/RichTextEditor';
 
 type Field = {
   key: string;
@@ -292,16 +293,27 @@ function ContentEditor({
                 </label>
               );
             }
-            if (f.type === 'textarea' || f.type === 'rich') {
+            if (f.type === 'rich') {
+              return (
+                <label key={f.key} className={wrapClass}>
+                  <span className="label block mb-1.5">{f.label}{f.hint ? ` · ${f.hint}` : ''}</span>
+                  <RichTextEditor
+                    value={value}
+                    onChange={(html) => set(f.key, html)}
+                    placeholder="Write the body. Use the toolbar for formatting."
+                  />
+                </label>
+              );
+            }
+            if (f.type === 'textarea') {
               return (
                 <label key={f.key} className={wrapClass}>
                   <span className="label block mb-1.5">{f.label}{f.hint ? ` · ${f.hint}` : ''}</span>
                   <textarea
-                    className={`input ${f.type === 'rich' ? 'min-h-[200px] font-mono text-xs' : 'min-h-[80px]'}`}
+                    className="input min-h-[80px]"
                     value={value}
                     onChange={(e) => set(f.key, e.target.value)}
-                    rows={f.type === 'rich' ? 10 : 3}
-                    placeholder={f.type === 'rich' ? '<p>HTML body...</p>' : ''}
+                    rows={3}
                   />
                 </label>
               );

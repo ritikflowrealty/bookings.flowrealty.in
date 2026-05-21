@@ -23,6 +23,13 @@ type Member = {
   linkedin_url: string;
 };
 
+function normalizeCategory(c: string | null | undefined): 'cofounder' | 'leadership' | 'team' {
+  const v = (c || '').toString().toLowerCase().trim();
+  if (v === 'cofounder' || v === 'co-founder' || v === 'founder') return 'cofounder';
+  if (v === 'leadership' || v === 'leader') return 'leadership';
+  return 'team';
+}
+
 export default async function TeamPage() {
   await ensureSchema();
   const db = getDb();
@@ -33,9 +40,9 @@ export default async function TeamPage() {
   `);
   const members = r.rows as unknown as Member[];
 
-  const cofounders = members.filter((m) => m.category === 'cofounder');
-  const leadership = members.filter((m) => m.category === 'leadership');
-  const team = members.filter((m) => m.category === 'team' || (!cofounders.includes(m) && !leadership.includes(m)));
+  const cofounders = members.filter((m) => normalizeCategory(m.category) === 'cofounder');
+  const leadership = members.filter((m) => normalizeCategory(m.category) === 'leadership');
+  const team = members.filter((m) => normalizeCategory(m.category) === 'team');
 
   return (
     <>

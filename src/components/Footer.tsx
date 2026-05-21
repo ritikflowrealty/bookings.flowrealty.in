@@ -105,9 +105,11 @@ export function Footer() {
             <p className="label mb-2">Company</p>
             <ul className="space-y-1.5 text-ink-muted">
               <li><Link href="/about" className="hover:text-ink transition-colors">About Us</Link></li>
+              <li><Link href="/team" className="hover:text-ink transition-colors">Team</Link></li>
+              <li><Link href="/awards" className="hover:text-ink transition-colors">Awards</Link></li>
               <li><Link href="/life-at-flow" className="hover:text-ink transition-colors">Life at Flow</Link></li>
               <li><Link href="/case-studies" className="hover:text-ink transition-colors">Case Studies</Link></li>
-              <li><Link href="/blogs" className="hover:text-ink transition-colors">Blogs</Link></li>
+              <li><Link href="/news" className="hover:text-ink transition-colors">Blogs</Link></li>
               <li><Link href="/careers" className="hover:text-ink transition-colors">Careers</Link></li>
               <li><Link href="/news" className="hover:text-ink transition-colors">News</Link></li>
             </ul>

@@ -11,7 +11,7 @@ export async function AboutContact() {
   const years = setting(s, 'years_active', '5');
 
   return (
-    <section id="contact" className="relative py-20 lg:py-28">
+    <section id="contact" className="relative py-14 lg:py-20">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           <div className="lg:col-span-7">
