@@ -9,21 +9,21 @@ const cards = [
     title: 'Channel Partner',
     subtitle: 'Register as a CP and start submitting leads',
     href: '/bro-portal/register',
-    hoverImage: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80',
+    hoverImage: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&q=80&auto=format&fit=crop',
   },
   {
     id: 'developer',
     title: 'Developer',
     subtitle: 'Partner with Flow for your next project launch',
     href: '/enquire',
-    hoverImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80',
+    hoverImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&q=80&auto=format&fit=crop',
   },
   {
     id: 'buyer',
     title: 'Home Buyer',
     subtitle: 'Browse curated homes and book in 60 seconds',
     href: '/projects',
-    hoverImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80',
+    hoverImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80&auto=format&fit=crop',
   },
 ];
 

@@ -18,7 +18,7 @@ const ENTITIES: Record<string, { label: string; fields: Field[] }> = {
       { key: 'name', label: 'Name', type: 'text' },
       { key: 'designation', label: 'Designation', type: 'text' },
       { key: 'category', label: 'Category', type: 'select', options: ['cofounder', 'leadership', 'team'] },
-      { key: 'photo_url', label: 'Photo URL', type: 'image' },
+      { key: 'photo_url', label: 'Photo URL', type: 'image', hint: 'Square 400x400px, < 200KB, JPG/PNG' },
       { key: 'bio', label: 'Bio', type: 'textarea', full: true },
       { key: 'linkedin_url', label: 'LinkedIn URL', type: 'url' },
       { key: 'display_order', label: 'Display order', type: 'number' },
@@ -349,7 +349,8 @@ function ContentEditor({
                   type={f.type === 'number' ? 'number' : f.type === 'date' ? 'date' : f.type === 'url' ? 'url' : 'text'}
                   className="input"
                   value={value}
-                  onChange={(e) => set(f.key, f.type === 'number' ? Number(e.target.value) : e.target.value)}
+                  min={f.type === 'number' ? 0 : undefined}
+                  onChange={(e) => set(f.key, f.type === 'number' ? Math.max(0, Number(e.target.value)) : e.target.value)}
                 />
               </label>
             );

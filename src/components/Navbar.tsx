@@ -11,7 +11,7 @@ const links = [
   { href: '/case-studies', label: 'Case Studies' },
   { href: '/projects', label: 'Projects' },
   { href: '/life-at-flow', label: 'Life at Flow' },
-  { href: '/blogs', label: 'Blogs' },
+  { href: '/news', label: 'Blogs' },
 ];
 
 export function Navbar() {
