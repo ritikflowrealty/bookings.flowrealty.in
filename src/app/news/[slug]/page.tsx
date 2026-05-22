@@ -41,7 +41,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
   return (
     <>
       <Navbar />
-      <main className="pt-8 pb-20">
+      <main className="pb-12">
         <article className="mx-auto max-w-3xl px-5 lg:px-8">
           <SectionReveal>
             <p className="text-xs text-ink-muted">

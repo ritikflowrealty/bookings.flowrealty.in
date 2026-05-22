@@ -47,7 +47,7 @@ export function WhyFlowSection() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <section id="services" className="py-14 lg:py-20 relative overflow-hidden">
+    <section id="services" className="py-12 lg:py-12 relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

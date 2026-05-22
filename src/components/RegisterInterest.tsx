@@ -31,7 +31,7 @@ export function RegisterInterest() {
   const [hovered, setHovered] = useState<string | null>(null);
 
   return (
-    <section className="py-14 lg:py-20 relative overflow-hidden">
+    <section className="py-12 lg:py-12 relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="text-center max-w-2xl mx-auto">
           <span className="chip">Register Your Interest</span>

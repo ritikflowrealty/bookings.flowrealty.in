@@ -15,7 +15,7 @@ export function ProjectsSection({ projects }: { projects: PublicProject[] }) {
   const filtered = active === 'All' ? projects : projects.filter((p) => p.city === active);
 
   return (
-    <section id="projects" className="relative py-14 lg:py-20">
+    <section id="projects" className="relative py-12 lg:py-12">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="flex items-end justify-between gap-6 flex-wrap">
           <div className="max-w-xl">

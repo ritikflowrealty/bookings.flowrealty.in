@@ -23,7 +23,7 @@ export async function PartnersSection() {
   if (developers.length === 0 && banking.length === 0) return null;
 
   return (
-    <section className="py-14 lg:py-20 overflow-hidden">
+    <section className="py-12 lg:py-12 overflow-hidden">
       <div className="mx-auto max-w-7xl px-5 lg:px-8 mb-10">
         <span className="chip">Our Network</span>
         <h2 className="mt-4 font-heading uppercase text-3xl sm:text-4xl tracking-tight">

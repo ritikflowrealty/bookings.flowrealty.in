@@ -15,7 +15,7 @@ export default function RegisterCPPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-8 pb-20">
+      <main className="pb-12">
         <div className="mx-auto max-w-3xl px-5 lg:px-8">
           <SectionReveal>
             <span className="chip">Bro Portal · Register</span>

@@ -28,7 +28,7 @@ export async function CaseStudiesPreview() {
   if (items.length === 0) return null;
 
   return (
-    <section className="py-14 lg:py-20">
+    <section className="py-12 lg:py-12">
       <div className="mx-auto max-w-7xl px-5 lg:px-8 mb-10">
         <div className="flex items-end justify-between gap-6 flex-wrap">
           <div className="max-w-2xl">

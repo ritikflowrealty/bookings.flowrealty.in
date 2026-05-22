@@ -29,7 +29,7 @@ export default async function NewsIndex() {
   return (
     <>
       <Navbar />
-      <main className="pt-8 pb-20">
+      <main className="py-12">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <SectionReveal>
             <span className="chip">Newsroom</span>

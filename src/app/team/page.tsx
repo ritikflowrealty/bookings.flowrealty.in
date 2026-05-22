@@ -48,7 +48,7 @@ export default async function TeamPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-10 pb-16">
+      <main className="py-12">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <SectionReveal>
             <span className="chip">Team Flow</span>

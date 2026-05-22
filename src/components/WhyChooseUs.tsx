@@ -36,7 +36,7 @@ export async function WhyChooseUs() {
   ];
 
   return (
-    <section id="why" className="relative py-14 lg:py-20">
+    <section id="why" className="relative py-12 lg:py-12">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="max-w-2xl">
           <span className="chip">Why Choose Us</span>

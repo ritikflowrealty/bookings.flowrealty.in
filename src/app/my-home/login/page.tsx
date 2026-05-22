@@ -18,7 +18,7 @@ export default async function CustomerLogin() {
   return (
     <>
       <Navbar />
-      <main className="pt-8 pb-20">
+      <main className="pb-12">
         <div className="mx-auto max-w-md px-5 lg:px-8">
           <SectionReveal>
             <span className="chip">My Home</span>

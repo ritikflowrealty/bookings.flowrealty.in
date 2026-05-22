@@ -27,7 +27,7 @@ export default async function AboutPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-10 pb-12">
+      <main className="py-12">
         <div className="mx-auto max-w-5xl px-5 lg:px-8">
           {/* Hero */}
           <SectionReveal>

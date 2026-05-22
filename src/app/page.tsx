@@ -50,7 +50,7 @@ export default async function HomePage() {
         <Hero />
 
         {/* 2. Story headline with strike-through animation */}
-        <section className="py-8 lg:py-12 relative overflow-hidden">
+        <section className="py-12 relative overflow-hidden">
           <div className="mx-auto max-w-7xl px-5 lg:px-8">
             <StoryHeadline
               prefix="REAL ESTATE'S #1 CHALLENGE IS"
@@ -86,7 +86,7 @@ export default async function HomePage() {
         <TestimonialsSection />
 
         {/* 11. Enquire Now (Developer / CP / Buyer) */}
-        <section id="enquire" className="py-14 lg:py-20">
+        <section id="enquire" className="py-12">
           <div className="mx-auto max-w-7xl px-5 lg:px-8">
             <SectionReveal>
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

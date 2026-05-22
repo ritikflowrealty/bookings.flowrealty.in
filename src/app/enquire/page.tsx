@@ -24,7 +24,7 @@ export default async function EnquirePage({
   return (
     <>
       <Navbar />
-      <main className="pt-12 pb-20">
+      <main className="py-12">
         <div className="mx-auto max-w-5xl px-5 lg:px-8">
           <SectionReveal>
             <span className="chip">Enquire Now</span>

@@ -23,7 +23,7 @@ export default async function ContactPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-8 pb-20">
+      <main className="py-12">
         <div className="mx-auto max-w-6xl px-5 lg:px-8">
           <SectionReveal>
             <span className="chip">Contact</span>

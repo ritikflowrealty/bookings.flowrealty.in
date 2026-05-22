@@ -21,7 +21,7 @@ export async function AwardsHomeStrip() {
   if (items.length === 0) return null;
 
   return (
-    <section className="py-14 lg:py-20 overflow-hidden">
+    <section className="py-12 lg:py-12 overflow-hidden">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="flex items-end justify-between gap-6 flex-wrap mb-10">
           <div className="max-w-2xl">

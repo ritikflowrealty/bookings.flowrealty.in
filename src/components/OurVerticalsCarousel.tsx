@@ -86,7 +86,7 @@ export function OurVerticalsCarousel({ verticals }: { verticals: Vertical[] }) {
   }
 
   return (
-    <section id="why-flow" className="py-14 lg:py-20 overflow-hidden">
+    <section id="why-flow" className="py-12 lg:py-12 overflow-hidden">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="max-w-2xl mb-8 lg:mb-10">
           <span className="chip">Our Verticals</span>
