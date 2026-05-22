@@ -12,38 +12,101 @@ export function AwardsCarousel({ items }: { items: Award[] }) {
       <div className="absolute left-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-r from-bg to-transparent pointer-events-none" />
       <div className="absolute right-0 top-0 bottom-0 w-32 z-10 bg-gradient-to-l from-bg to-transparent pointer-events-none" />
       <motion.div
-        className="flex gap-6"
+        className="flex gap-5 lg:gap-6"
         animate={{ x: ['0%', '-33.333%'] }}
         transition={{ duration: 90, repeat: Infinity, ease: 'linear' }}
         style={{ width: 'max-content' }}
       >
         {tripled.map((a, i) => (
-          <article
-            key={`${a.id}-${i}`}
-            className="flex-shrink-0 w-[360px] sm:w-[420px] lg:w-[460px] glass-strong rounded-3xl p-6 sm:p-7 flex gap-5 hover:bg-white/[0.07] transition-colors"
-          >
-            <div className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white/[0.04] flex items-center justify-center overflow-hidden">
-              {a.image_url ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={a.image_url} alt="" className="w-full h-full object-contain" />
-              ) : (
-                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" className="text-neon-magenta">
-                  <path d="M6 9a6 6 0 0012 0M6 9V3h12v6M9 21h6m-3-3v3m0-3a4 4 0 01-4-4V8h8v6a4 4 0 01-4 4z" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              )}
-            </div>
-            <div className="min-w-0 flex flex-col justify-center">
-              <p className="font-heading uppercase text-base sm:text-lg leading-tight tracking-tight text-white">
-                {a.title}
-              </p>
-              <p className="mt-2 text-[11px] sm:text-xs text-ink-muted uppercase tracking-[0.14em]">
-                {a.awarding_body}
-                {a.year ? ` · ${a.year}` : ''}
-              </p>
-            </div>
-          </article>
+          <AwardTile key={`${a.id}-${i}`} a={a} />
         ))}
       </motion.div>
     </div>
+  );
+}
+
+function AwardTile({ a }: { a: Award }) {
+  return (
+    <article
+      className="flex-shrink-0 w-[280px] sm:w-[320px] lg:w-[340px] group relative"
+      style={{ perspective: '1400px' }}
+    >
+      <div
+        className="relative h-[300px] sm:h-[340px] rounded-[24px] overflow-hidden border border-white/10 backdrop-blur-2xl transition-shadow duration-500 hover:shadow-glow"
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
+        }}
+      >
+        {/* Background image */}
+        {a.image_url ? (
+          <div className="absolute inset-0 opacity-[0.18] group-hover:opacity-30 transition-opacity duration-700">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={a.image_url} alt="" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-b from-bg/60 via-bg/20 to-bg/85" />
+          </div>
+        ) : null}
+
+        {/* Decorative neon glow */}
+        <div
+          aria-hidden="true"
+          className="absolute -top-20 -right-20 w-56 h-56 rounded-full blur-3xl opacity-40 group-hover:opacity-70 transition-opacity duration-700"
+          style={{
+            background:
+              'radial-gradient(closest-side, rgba(217,46,255,0.55), rgba(255,60,130,0.15) 60%, transparent 75%)',
+          }}
+        />
+
+        {/* Content */}
+        <div className="relative h-full flex flex-col p-5 sm:p-6">
+          <div className="flex items-start justify-between gap-3">
+            <span className="font-display text-lg tabular-nums text-ink-dim">
+              {a.year || '—'}
+            </span>
+            <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/[0.06] border border-white/10">
+              {a.image_url ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={a.image_url} alt="" className="w-7 h-7 object-contain" />
+              ) : (
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  className="text-neon-magenta"
+                >
+                  <path
+                    d="M6 9a6 6 0 0012 0M6 9V3h12v6M9 21h6m-3-3v3m0-3a4 4 0 01-4-4V8h8v6a4 4 0 01-4 4z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
+            </span>
+          </div>
+
+          <div className="mt-auto">
+            <h3 className="font-heading uppercase text-lg sm:text-xl leading-[1.1] tracking-tight text-white">
+              {a.title}
+            </h3>
+            <p className="mt-2 text-[11px] sm:text-xs text-ink uppercase tracking-[0.14em]">
+              {a.awarding_body}
+            </p>
+          </div>
+        </div>
+
+        {/* Top highlight stroke */}
+        <span
+          aria-hidden="true"
+          className="absolute top-0 left-5 right-5 h-px"
+          style={{
+            background:
+              'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)',
+          }}
+        />
+      </div>
+    </article>
   );
 }

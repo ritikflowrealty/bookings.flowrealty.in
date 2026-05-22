@@ -33,30 +33,29 @@ export function WhyFlowOrbit({ verticals }: { verticals: Vertical[] }) {
       // 3x viewport scroll height: scrolling 3 viewports advances all tiles
       style={{ height: '300vh' }}
     >
-      <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
-        <div className="mx-auto max-w-7xl px-5 lg:px-8 mb-8 lg:mb-10">
+      <div className="sticky top-[72px] h-[calc(100vh-72px)] flex flex-col overflow-hidden pt-10 sm:pt-14 lg:pt-16">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8 mb-6 lg:mb-8">
           <span className="chip">Why Flow?</span>
           <h2 className="mt-3 font-heading uppercase text-2xl sm:text-3xl lg:text-5xl tracking-tight leading-[1.05]">
             Four verticals. Built for every kind of project.
           </h2>
-          <p className="mt-2 text-sm sm:text-base text-ink-muted leading-relaxed max-w-2xl">
+          <p className="mt-2 text-sm sm:text-base text-ink leading-relaxed max-w-2xl">
             Scroll to explore. Each vertical is built for a specific developer need.
           </p>
         </div>
 
         <motion.div
           style={{ x }}
-          className="flex gap-5 lg:gap-6 px-5 lg:pl-12 will-change-transform"
+          className="flex gap-5 lg:gap-6 px-5 lg:pl-12 will-change-transform flex-1 items-center"
         >
           {verticals.map((v, i) => (
             <VerticalCard key={`${v.title}-${i}`} v={v} index={i} />
           ))}
-          {/* trailing spacer so last card can fully nest in view */}
           <div aria-hidden="true" className="flex-shrink-0 w-8" />
         </motion.div>
 
         {/* Progress strip */}
-        <div className="mx-auto max-w-7xl w-full px-5 lg:px-8 mt-8">
+        <div className="mx-auto max-w-7xl w-full px-5 lg:px-8 mt-4 mb-6">
           <div className="h-[2px] bg-white/10 rounded-full overflow-hidden">
             <motion.div
               className="h-full origin-left"
@@ -85,7 +84,7 @@ function VerticalCard({ v }: { v: Vertical; index: number }) {
       style={{ perspective: '1400px' }}
     >
       <div
-        className="relative h-[60vh] min-h-[420px] max-h-[600px] rounded-[28px] overflow-hidden border border-white/10 backdrop-blur-2xl transition-shadow duration-500 hover:shadow-glow"
+        className="relative h-[55vh] min-h-[380px] max-h-[540px] rounded-[28px] overflow-hidden border border-white/10 backdrop-blur-2xl transition-shadow duration-500 hover:shadow-glow"
         style={{
           background:
             'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
