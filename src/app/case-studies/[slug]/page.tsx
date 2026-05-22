@@ -46,7 +46,7 @@ export default async function CaseStudyDetail({ params }: { params: Promise<{ sl
   return (
     <>
       <Navbar />
-      <main className="pt-12 pb-12">
+      <main className="pt-8 pb-12">
         <article className="mx-auto max-w-4xl px-5 lg:px-8">
           <SectionReveal>
             <p className="text-xs text-ink-muted">

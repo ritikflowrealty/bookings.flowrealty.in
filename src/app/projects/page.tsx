@@ -17,7 +17,7 @@ export default async function ProjectsIndex() {
   return (
     <>
       <Navbar />
-      <main className="pt-12">
+      <main className="pt-8">
         <ProjectsSection projects={projects} />
       </main>
       <Footer />

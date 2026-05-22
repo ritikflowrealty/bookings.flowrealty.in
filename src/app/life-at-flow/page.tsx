@@ -19,7 +19,7 @@ export default async function LifeAtFlowPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-12 pb-12">
+      <main className="pt-8 pb-12">
         <div className="mx-auto max-w-5xl px-5 lg:px-8">
           <SectionReveal>
             <span className="chip">Life at Flow</span>

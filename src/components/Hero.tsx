@@ -32,7 +32,7 @@ export async function Hero() {
             className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 rounded-full font-medium text-white text-sm sm:text-base transition-all duration-300 hover:scale-105 active:scale-95 backdrop-blur-md"
             style={{ background: 'rgba(255, 255, 255, 0.12)', border: '1px solid rgba(255,255,255,0.18)' }}
           >
-            Why Flow?
+            Our Verticals
           </a>
         </div>
       </section>
@@ -68,7 +68,7 @@ export async function Hero() {
                 See available homes
               </a>
               <a href="/#why-flow" className="btn-ghost transition-transform duration-300 hover:scale-105 active:scale-95">
-                Why Flow?
+                Our Verticals
               </a>
             </div>
           </div>

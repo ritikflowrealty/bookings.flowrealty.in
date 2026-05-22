@@ -38,14 +38,18 @@ function AwardTile({ a }: { a: Award }) {
             'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
         }}
       >
-        {/* Background image */}
-        {a.image_url ? (
-          <div className="absolute inset-0 opacity-[0.18] group-hover:opacity-30 transition-opacity duration-700">
+        {/* Background image — fills tile, dimmed for glass effect */}
+        {a.image_url && (
+          <div className="absolute inset-0 transition-opacity duration-700 opacity-100 group-hover:opacity-100">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={a.image_url} alt="" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-b from-bg/60 via-bg/20 to-bg/85" />
+            <img
+              src={a.image_url}
+              alt={a.title}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-bg/40 via-bg/30 to-bg/95" />
           </div>
-        ) : null}
+        )}
 
         {/* Decorative neon glow */}
         <div
@@ -61,29 +65,7 @@ function AwardTile({ a }: { a: Award }) {
         <div className="relative h-full flex flex-col p-5 sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <span className="font-display text-lg tabular-nums text-ink-dim">
-              {a.year || '—'}
-            </span>
-            <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/[0.06] border border-white/10">
-              {a.image_url ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={a.image_url} alt="" className="w-7 h-7 object-contain" />
-              ) : (
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  className="text-neon-magenta"
-                >
-                  <path
-                    d="M6 9a6 6 0 0012 0M6 9V3h12v6M9 21h6m-3-3v3m0-3a4 4 0 01-4-4V8h8v6a4 4 0 01-4 4z"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              )}
+              {a.year || ''}
             </span>
           </div>
 

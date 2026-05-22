@@ -57,7 +57,7 @@ export function ServicesSection() {
           className="flex items-end justify-between gap-6 flex-wrap mb-14"
         >
           <div>
-            <span className="chip">Our Services</span>
+            <span className="chip">Why Flow?</span>
             <h2 className="mt-4 font-heading uppercase text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.05]">
               We sell what others can&rsquo;t.
             </h2>
@@ -67,7 +67,7 @@ export function ServicesSection() {
             </p>
           </div>
           <Link href="/services" className="btn-ghost text-sm group">
-            All services
+            All capabilities
             <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
           </Link>
         </motion.div>

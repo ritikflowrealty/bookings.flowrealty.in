@@ -25,9 +25,11 @@ function StatItem({ stat, inView }: { stat: Stat; inView: boolean }) {
   const count = useCountUp(stat.value, 2000, inView);
   return (
     <div className="text-center px-3 py-4 sm:px-4 sm:py-5">
-      <p className="font-display font-bold text-2xl sm:text-3xl lg:text-4xl neon-text leading-none tabular-nums">
-        {count.toLocaleString('en-IN')}
-        <span className="font-bold">{stat.suffix}</span>
+      <p className="font-display font-extrabold text-3xl sm:text-4xl lg:text-5xl neon-text leading-none tabular-nums">
+        <span>{count.toLocaleString('en-IN')}</span>
+        <span className="font-medium text-base sm:text-lg lg:text-xl ml-1 align-top">
+          {stat.suffix.trim()}
+        </span>
       </p>
       <p className="mt-2 text-[10px] sm:text-[11px] uppercase tracking-[0.14em] text-ink-muted font-medium">
         {stat.label}

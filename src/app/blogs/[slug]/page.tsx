@@ -186,7 +186,7 @@ export default async function BlogPostPage({ params }: { params: Promise<RoutePa
   return (
     <>
       <Navbar />
-      <main className="pt-12 pb-24">
+      <main className="pt-8 pb-20">
         <article className="mx-auto max-w-3xl px-5 lg:px-8">
           <SectionReveal>
             <Link href="/blogs" className="text-sm text-ink-muted hover:text-ink transition-colors">

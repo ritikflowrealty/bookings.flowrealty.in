@@ -33,7 +33,7 @@ export default async function CaseStudiesIndex() {
   return (
     <>
       <Navbar />
-      <main className="pt-12 pb-24">
+      <main className="pt-8 pb-20">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <SectionReveal>
             <span className="chip">Case Studies</span>
