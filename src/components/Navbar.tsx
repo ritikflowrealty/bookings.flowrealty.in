@@ -1,23 +1,30 @@
 'use client';
 import Link from 'next/link';
 import { Logo } from './Logo';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 
 const links = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
-  { href: '/#why-flow', label: 'Why Flow?' },
   { href: '/team', label: 'Team' },
   { href: '/projects', label: 'Projects' },
   { href: '/case-studies', label: 'Work' },
   { href: '/news', label: 'Insights' },
 ];
 
+const enquireOptions = [
+  { href: '/enquire?as=developer', label: 'Developer', sub: 'Project mandate' },
+  { href: '/enquire?as=cp', label: 'Channel Partner', sub: 'Submit leads' },
+  { href: '/enquire?as=buyer', label: 'Home Buyer', sub: 'Find a home' },
+];
+
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [enquireOpen, setEnquireOpen] = useState(false);
   const pathname = usePathname();
+  const enquireRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -26,10 +33,19 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setOpen(false);
+    setEnquireOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (!enquireRef.current) return;
+      if (!enquireRef.current.contains(e.target as Node)) setEnquireOpen(false);
+    }
+    if (enquireOpen) document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [enquireOpen]);
 
   function isActive(href: string) {
     if (href === '/') return pathname === '/';
@@ -71,12 +87,68 @@ export function Navbar() {
               />
             </Link>
           ))}
-          <Link
-            href="/enquire"
-            className="btn-neon ml-3 text-sm py-2.5 transition-transform duration-300 hover:scale-105 active:scale-95"
-          >
-            Enquire Now
-          </Link>
+
+          {/* Enquire Now dropdown */}
+          <div ref={enquireRef} className="relative ml-3">
+            <button
+              type="button"
+              onClick={() => setEnquireOpen((v) => !v)}
+              aria-expanded={enquireOpen}
+              aria-haspopup="menu"
+              className="btn-neon text-sm py-2.5 inline-flex items-center gap-1.5"
+            >
+              Enquire Now
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className={`transition-transform ${enquireOpen ? 'rotate-180' : ''}`}
+              >
+                <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            {enquireOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 mt-2 w-64 rounded-2xl glass-strong border border-white/10 backdrop-blur-2xl shadow-card overflow-hidden animate-[fadeIn_180ms_ease-out]"
+              >
+                {enquireOptions.map((o) => (
+                  <Link
+                    key={o.href}
+                    href={o.href}
+                    role="menuitem"
+                    className="flex items-center justify-between px-4 py-3 hover:bg-white/[0.06] transition-colors group"
+                    onClick={() => setEnquireOpen(false)}
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-ink uppercase tracking-wide">
+                        {o.label}
+                      </p>
+                      <p className="text-[11px] text-ink-muted mt-0.5">{o.sub}</p>
+                    </div>
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="text-ink-dim group-hover:text-neon-magenta transition-colors group-hover:translate-x-0.5"
+                    >
+                      <path
+                        d="M5 12h14M13 5l7 7-7 7"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
 
         <button
@@ -89,9 +161,7 @@ export function Navbar() {
             {open ? (
               <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
             ) : (
-              <>
-                <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" />
-              </>
+              <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" />
             )}
           </svg>
         </button>
@@ -99,7 +169,7 @@ export function Navbar() {
 
       {open && (
         <div className="md:hidden border-t border-white/10 bg-bg/90 backdrop-blur-2xl animate-[fadeIn_200ms_ease-out]">
-          <div className="px-5 py-4 flex flex-col gap-2">
+          <div className="px-5 py-4 flex flex-col gap-1">
             {links.map((l) => (
               <Link
                 key={l.href}
@@ -109,12 +179,24 @@ export function Navbar() {
                 {l.label}
               </Link>
             ))}
-            <Link
-              href="/enquire"
-              className="btn-neon mt-2 transition-transform duration-300 active:scale-95"
-            >
-              Enquire Now
-            </Link>
+            <div className="mt-3 pt-3 border-t border-white/10">
+              <p className="px-4 text-[10px] uppercase tracking-[0.18em] text-ink-dim">Enquire Now</p>
+              {enquireOptions.map((o) => (
+                <Link
+                  key={o.href}
+                  href={o.href}
+                  className="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/5 transition-colors"
+                >
+                  <div>
+                    <p className="text-sm text-ink uppercase tracking-wide">{o.label}</p>
+                    <p className="text-[11px] text-ink-muted">{o.sub}</p>
+                  </div>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-ink-dim">
+                    <path d="M5 12h14M13 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       )}

@@ -165,6 +165,22 @@ function configs(): Record<string, EntityConfig> {
       ],
       orderBy: 'category, display_order, name',
     },
+    verticals: {
+      table: 'verticals',
+      selectColumns: '*',
+      insertColumns: ['slug', 'number', 'title', 'body', 'status', 'image_url', 'display_order', 'is_published'],
+      buildArgs: (b) => [
+        slugify(sanitizeText(b.slug || b.title, 80)),
+        sanitizeText(b.number || '01', 10),
+        sanitizeText(b.title, 200),
+        sanitizeText(b.body || '', 1000),
+        ['Ongoing Projects', 'Coming Soon'].includes(b.status) ? b.status : 'Ongoing Projects',
+        sanitizeText(b.image_url || '', 500),
+        Number(b.display_order || 0),
+        b.is_published === false ? 0 : 1,
+      ],
+      orderBy: 'display_order, id',
+    },
   };
 }
 

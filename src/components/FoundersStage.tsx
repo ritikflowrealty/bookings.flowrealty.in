@@ -7,43 +7,63 @@ export type FounderStageItem = {
   id: number;
   name: string;
   designation: string;
-  cutout_url: string; // transparent-background portrait
+  cutout_url: string;
   bio: string;
   linkedin_url: string;
-  pedigree: string[]; // institutions/companies relevant to THIS founder only
+  pedigree: string[]; // raw list — we infer Education vs Work
 };
 
-/**
- * Founders stage: 3D cutout portraits with hover reveal.
- * - Default: black & white, slightly tilted, scaled down.
- * - Hover/focus: color, lifted in 3D, info card slides in.
- * Designed for transparent-background PNG cutouts (e.g. R2-hosted).
- *
- * Recommended cutout size: 1200x1500 px (4:5 portrait), transparent PNG, < 800 KB.
- */
+// Heuristics for splitting pedigree chips into Education vs Work.
+const EDU_KEYWORDS = [
+  'IIM',
+  'NMIMS',
+  'NIT',
+  'IIT',
+  'University',
+  'College',
+  'School',
+  'Institute',
+  'Nirma',
+  'B-school',
+];
+
+function splitPedigree(items: string[]) {
+  const education: string[] = [];
+  const work: string[] = [];
+  for (const item of items) {
+    const lower = item.toLowerCase();
+    const isEdu = EDU_KEYWORDS.some((k) => lower.includes(k.toLowerCase()));
+    if (isEdu) education.push(item);
+    else work.push(item);
+  }
+  return { education, work };
+}
+
 export function FoundersStage({ founders }: { founders: FounderStageItem[] }) {
   const [hovered, setHovered] = useState<number | null>(null);
 
   if (founders.length === 0) return null;
 
   return (
-    <section className="relative py-14 lg:py-20 overflow-hidden">
+    <section className="py-10 lg:py-14 overflow-hidden">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
-        <div className="max-w-2xl">
+        <div className="max-w-2xl mb-6 lg:mb-8">
           <span className="chip">Leadership</span>
-          <h2 className="mt-4 font-heading uppercase text-3xl sm:text-4xl lg:text-5xl tracking-tight">
+          <h2 className="mt-3 font-heading uppercase text-2xl sm:text-3xl lg:text-4xl tracking-tight">
             People who&rsquo;ve been on both sides.
           </h2>
         </div>
 
         <div
-          className={`mt-10 grid gap-6 lg:gap-8 ${
-            founders.length === 1 ? 'grid-cols-1 max-w-xl mx-auto' : 'grid-cols-1 md:grid-cols-2'
+          className={`grid gap-5 lg:gap-6 ${
+            founders.length === 1 ? 'grid-cols-1 max-w-md mx-auto' : 'grid-cols-1 sm:grid-cols-2'
           }`}
           style={{ perspective: '1400px' }}
         >
           {founders.map((f) => {
             const isActive = hovered === f.id;
+            const { education, work } = splitPedigree(f.pedigree);
+
             return (
               <div
                 key={f.id}
@@ -54,40 +74,33 @@ export function FoundersStage({ founders }: { founders: FounderStageItem[] }) {
                 tabIndex={0}
                 className="group relative outline-none"
               >
-                {/* Glow halo */}
                 <motion.div
                   aria-hidden="true"
                   initial={false}
-                  animate={{
-                    opacity: isActive ? 0.7 : 0.25,
-                    scale: isActive ? 1.05 : 0.92,
-                  }}
-                  transition={{ duration: 0.6 }}
-                  className="absolute inset-0 -z-10 rounded-[40px] blur-3xl"
+                  animate={{ opacity: isActive ? 0.6 : 0.2, scale: isActive ? 1.02 : 0.94 }}
+                  transition={{ duration: 0.5 }}
+                  className="absolute inset-0 -z-10 rounded-[36px] blur-3xl"
                   style={{
                     background:
-                      'radial-gradient(closest-side, rgba(217,46,255,0.5), rgba(255,60,130,0.25) 50%, transparent 75%)',
+                      'radial-gradient(closest-side, rgba(217,46,255,0.45), rgba(255,60,130,0.2) 50%, transparent 75%)',
                   }}
                 />
 
-                {/* Stage card */}
                 <div
-                  className="relative rounded-[32px] overflow-hidden bg-gradient-to-b from-white/[0.04] to-transparent border border-white/10 backdrop-blur-md min-h-[440px] sm:min-h-[520px] flex"
-                  style={{
-                    transformStyle: 'preserve-3d',
-                  }}
+                  className="relative rounded-[28px] overflow-hidden bg-gradient-to-b from-white/[0.05] to-white/[0.01] border border-white/12 backdrop-blur-md h-[380px] sm:h-[420px] lg:h-[460px]"
+                  style={{ transformStyle: 'preserve-3d' }}
                 >
                   {/* Portrait */}
                   <motion.div
                     className="absolute inset-0 flex items-end justify-center"
                     initial={false}
                     animate={{
-                      rotateY: isActive ? -6 : 0,
-                      rotateX: isActive ? 4 : 0,
-                      scale: isActive ? 1.05 : 1,
-                      y: isActive ? -8 : 0,
+                      rotateY: isActive ? -5 : 0,
+                      rotateX: isActive ? 3 : 0,
+                      scale: isActive ? 1.04 : 1,
+                      y: isActive ? -6 : 0,
                     }}
-                    transition={{ duration: 0.55, ease: [0.22, 0.61, 0.36, 1] }}
+                    transition={{ duration: 0.5, ease: [0.22, 0.61, 0.36, 1] }}
                     style={{ transformStyle: 'preserve-3d' }}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -97,32 +110,32 @@ export function FoundersStage({ founders }: { founders: FounderStageItem[] }) {
                       className="w-full h-full object-contain object-bottom transition-all duration-700"
                       style={{
                         filter: isActive
-                          ? 'grayscale(0%) saturate(115%) drop-shadow(0 30px 40px rgba(0,0,0,0.55))'
-                          : 'grayscale(100%) contrast(105%) drop-shadow(0 20px 30px rgba(0,0,0,0.5))',
+                          ? 'grayscale(0%) saturate(115%) drop-shadow(0 25px 35px rgba(0,0,0,0.55))'
+                          : 'grayscale(100%) contrast(105%) drop-shadow(0 18px 25px rgba(0,0,0,0.45))',
                       }}
                     />
                   </motion.div>
 
-                  {/* Info reveal — slides up from bottom */}
+                  {/* Hover detail panel */}
                   <AnimatePresence>
                     {isActive && (
                       <motion.div
-                        initial={{ opacity: 0, y: 30 }}
+                        initial={{ opacity: 0, y: 24 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 30 }}
-                        transition={{ duration: 0.4 }}
-                        className="absolute left-0 right-0 bottom-0 p-5 sm:p-6 z-10"
+                        exit={{ opacity: 0, y: 24 }}
+                        transition={{ duration: 0.35 }}
+                        className="absolute left-0 right-0 bottom-0 p-4 sm:p-5 z-10"
                       >
                         <div
-                          className="rounded-2xl p-5 backdrop-blur-2xl border border-white/15"
-                          style={{ background: 'rgba(8, 9, 14, 0.78)' }}
+                          className="rounded-2xl p-4 sm:p-5 backdrop-blur-2xl border border-white/15"
+                          style={{ background: 'rgba(8,9,14,0.85)' }}
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div>
-                              <h3 className="font-heading uppercase text-xl sm:text-2xl tracking-tight">
+                              <h3 className="font-heading uppercase text-lg sm:text-xl tracking-tight text-white">
                                 {f.name}
                               </h3>
-                              <p className="text-xs sm:text-sm text-neon-purple mt-0.5">
+                              <p className="text-[11px] sm:text-xs text-neon-magenta mt-0.5 uppercase tracking-wider">
                                 {f.designation}
                               </p>
                             </div>
@@ -141,21 +154,49 @@ export function FoundersStage({ founders }: { founders: FounderStageItem[] }) {
                               </a>
                             )}
                           </div>
+
                           {f.bio && (
-                            <p className="mt-3 text-sm text-ink-muted leading-relaxed line-clamp-4">
+                            <p className="mt-3 text-xs sm:text-sm text-ink leading-relaxed line-clamp-3">
                               {f.bio}
                             </p>
                           )}
-                          {f.pedigree.length > 0 && (
-                            <div className="mt-4 flex flex-wrap gap-1.5">
-                              {f.pedigree.map((p) => (
-                                <span
-                                  key={p}
-                                  className="px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.12em] bg-white/[0.06] border border-white/10 text-ink-muted"
-                                >
-                                  {p}
-                                </span>
-                              ))}
+
+                          {(work.length > 0 || education.length > 0) && (
+                            <div className="mt-4 space-y-2.5 text-[10px] sm:text-[11px]">
+                              {work.length > 0 && (
+                                <div>
+                                  <p className="uppercase tracking-[0.16em] text-ink-dim mb-1.5">
+                                    Work Experience
+                                  </p>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {work.map((p) => (
+                                      <span
+                                        key={p}
+                                        className="px-2.5 py-1 rounded-full uppercase tracking-[0.1em] bg-white/[0.07] border border-white/15 text-white"
+                                      >
+                                        {p}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {education.length > 0 && (
+                                <div>
+                                  <p className="uppercase tracking-[0.16em] text-ink-dim mb-1.5">
+                                    Education
+                                  </p>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {education.map((p) => (
+                                      <span
+                                        key={p}
+                                        className="px-2.5 py-1 rounded-full uppercase tracking-[0.1em] bg-neon-magenta/12 border border-neon-magenta/30 text-white"
+                                      >
+                                        {p}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
@@ -163,21 +204,23 @@ export function FoundersStage({ founders }: { founders: FounderStageItem[] }) {
                     )}
                   </AnimatePresence>
 
-                  {/* Static name strip (when not hovered) */}
+                  {/* Static name strip when not hovered (HIGH contrast) */}
                   {!isActive && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.4 }}
-                      className="absolute left-0 right-0 bottom-0 p-5 sm:p-6 z-10 pointer-events-none"
+                      className="absolute left-0 right-0 bottom-0 p-4 sm:p-5 z-10 pointer-events-none"
                     >
-                      <div className="text-center">
-                        <h3 className="font-heading uppercase text-xl sm:text-2xl tracking-tight">
+                      <div
+                        className="rounded-xl px-4 py-3 backdrop-blur-md text-center"
+                        style={{ background: 'rgba(8,9,14,0.7)' }}
+                      >
+                        <h3 className="font-heading uppercase text-base sm:text-lg tracking-tight text-white">
                           {f.name}
                         </h3>
-                        <p className="text-xs sm:text-sm text-ink-muted mt-0.5">{f.designation}</p>
-                        <p className="text-[10px] uppercase tracking-[0.18em] text-ink-dim mt-3">
-                          Hover to know more
+                        <p className="text-[10px] sm:text-[11px] text-white/80 mt-0.5 uppercase tracking-[0.14em]">
+                          {f.designation}
                         </p>
                       </div>
                     </motion.div>

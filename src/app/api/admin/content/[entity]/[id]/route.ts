@@ -42,6 +42,10 @@ const TABLE_MAP: Record<string, { table: string; allowedColumns: string[] }> = {
     table: 'partners',
     allowedColumns: ['name', 'category', 'logo_url', 'website_url', 'display_order', 'is_published'],
   },
+  verticals: {
+    table: 'verticals',
+    allowedColumns: ['number', 'title', 'body', 'status', 'image_url', 'display_order', 'is_published'],
+  },
 };
 
 const SANITIZE_LIMITS: Record<string, number> = {
@@ -54,6 +58,7 @@ const SANITIZE_LIMITS: Record<string, number> = {
   metric_1_label: 80, metric_1_value: 40, metric_2_label: 80, metric_2_value: 40,
   metric_3_label: 80, metric_3_value: 40, company: 120,
   logo_url: 500, website_url: 500,
+  number: 10, body: 1000, status: 40,
 };
 
 function isNumberField(col: string): boolean {

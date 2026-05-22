@@ -15,6 +15,7 @@ import {
   listProjectsForFilter,
 } from '@/lib/taxonomy';
 import type { ProjectRow } from '@/lib/db';
+import { FAQSection } from '@/components/FAQSection';
 
 const SUPPORTED_CITIES: Record<string, string> = {
   bangalore: 'Bangalore',
@@ -127,6 +128,7 @@ export default async function LocationPage({ params }: { params: Promise<RoutePa
           title={`Looking for a home in ${loc.name}?`}
           body="Share your budget and configuration. Our advisor will call back with options within 2 hours."
         />
+        <FAQSection scope="location" scopeRefId={loc.id} title={`FAQs about ${loc.name}`} />
       </main>
       <Footer />
     </>

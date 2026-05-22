@@ -20,8 +20,8 @@ const config: Config = {
         },
         ink: {
           DEFAULT: '#F5F5F5',
-          muted: '#9CA0A8',
-          dim: '#6B6F78',
+          muted: '#C4C7CD',
+          dim: '#9197A0',
         },
       },
       fontFamily: {

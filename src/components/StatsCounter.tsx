@@ -8,7 +8,6 @@ function useCountUp(target: number, duration = 2000, trigger: boolean) {
   const [count, setCount] = useState(0);
   useEffect(() => {
     if (!trigger) return;
-    let start = 0;
     const startTime = performance.now();
     function step(now: number) {
       const elapsed = now - startTime;
@@ -23,13 +22,16 @@ function useCountUp(target: number, duration = 2000, trigger: boolean) {
 }
 
 function StatItem({ stat, inView }: { stat: Stat; inView: boolean }) {
-  const count = useCountUp(stat.value, 2200, inView);
+  const count = useCountUp(stat.value, 2000, inView);
   return (
-    <div className="text-center px-4 py-6 sm:py-8">
-      <p className="font-display text-4xl sm:text-5xl lg:text-6xl neon-text">
-        {count.toLocaleString('en-IN')}{stat.suffix}
+    <div className="text-center px-3 py-4 sm:px-4 sm:py-5">
+      <p className="font-display font-bold text-2xl sm:text-3xl lg:text-4xl neon-text leading-none tabular-nums">
+        {count.toLocaleString('en-IN')}
+        <span className="font-bold">{stat.suffix}</span>
       </p>
-      <p className="mt-2 text-xs sm:text-sm uppercase tracking-[0.15em] text-ink-muted">{stat.label}</p>
+      <p className="mt-2 text-[10px] sm:text-[11px] uppercase tracking-[0.14em] text-ink-muted font-medium">
+        {stat.label}
+      </p>
     </div>
   );
 }
@@ -42,7 +44,12 @@ export function StatsCounter({ stats }: { stats: Stat[] }) {
     const el = ref.current;
     if (!el) return;
     const io = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setInView(true); io.disconnect(); } },
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          io.disconnect();
+        }
+      },
       { threshold: 0.3 }
     );
     io.observe(el);
@@ -50,11 +57,8 @@ export function StatsCounter({ stats }: { stats: Stat[] }) {
   }, []);
 
   return (
-    <div
-      ref={ref}
-      className="w-full glass-strong border-y border-white/10 overflow-hidden"
-    >
-      <div className="mx-auto max-w-7xl px-5 lg:px-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 divide-x divide-white/10">
+    <div ref={ref} className="w-full glass-strong border-y border-white/10 overflow-hidden">
+      <div className="mx-auto max-w-7xl px-3 sm:px-5 lg:px-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 divide-x divide-white/10">
         {stats.map((s, i) => (
           <StatItem key={i} stat={s} inView={inView} />
         ))}

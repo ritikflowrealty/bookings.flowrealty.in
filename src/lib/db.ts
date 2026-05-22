@@ -115,6 +115,13 @@ async function runMigrations(db: Client): Promise<void> {
     // Team member additions
     `ALTER TABLE team_members ADD COLUMN cutout_url TEXT DEFAULT ''`,
     `ALTER TABLE team_members ADD COLUMN pedigree TEXT DEFAULT ''`,
+    // Enquiries — audience type + developer/CP-specific fields
+    `ALTER TABLE enquiries ADD COLUMN audience TEXT NOT NULL DEFAULT 'buyer'`, // 'buyer' | 'developer' | 'cp'
+    `ALTER TABLE enquiries ADD COLUMN company_name TEXT DEFAULT ''`,
+    `ALTER TABLE enquiries ADD COLUMN designation TEXT DEFAULT ''`,
+    `ALTER TABLE enquiries ADD COLUMN project_name TEXT DEFAULT ''`,
+    `ALTER TABLE enquiries ADD COLUMN unit_count TEXT DEFAULT ''`,
+    `ALTER TABLE enquiries ADD COLUMN rera_number TEXT DEFAULT ''`,
   ];
   for (const sql of addColumns) {
     try {

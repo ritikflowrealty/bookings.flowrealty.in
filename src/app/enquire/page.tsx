@@ -1,38 +1,47 @@
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { SectionReveal } from '@/components/SectionReveal';
-import { EnquireForm } from './EnquireForm';
+import { EnquireBlock } from '@/components/EnquireBlock';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Enquire Now | Speak to a Flow Realty Advisor',
   description:
-    'Tell us what you\'re looking for. Our team will call you back within 2 hours with curated home options that match your budget, location and configuration.',
+    'Whether you are a developer, channel partner, or home buyer, our team responds within 2 hours.',
 };
 
-export default function EnquirePage() {
+type Audience = 'developer' | 'cp' | 'buyer';
+
+export default async function EnquirePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ as?: string }>;
+}) {
+  const sp = await searchParams;
+  const initial: Audience = sp.as === 'developer' || sp.as === 'cp' ? sp.as : 'buyer';
+
   return (
     <>
       <Navbar />
-      <main className="pt-12 pb-24">
-        <div className="mx-auto max-w-4xl px-5 lg:px-8">
+      <main className="pt-12 pb-20">
+        <div className="mx-auto max-w-5xl px-5 lg:px-8">
           <SectionReveal>
             <span className="chip">Enquire Now</span>
-            <h1 className="mt-4 font-display text-4xl sm:text-5xl tracking-tight">
-              Tell us what home you want.
-              <br />
-              <span className="neon-text">We&rsquo;ll find it.</span>
+            <h1 className="mt-4 font-heading uppercase text-4xl sm:text-5xl tracking-tight">
+              Tell us who you are.{' '}
+              <span className="neon-text">We&rsquo;ll take it from there.</span>
             </h1>
-            <p className="mt-4 text-ink-muted leading-relaxed">
-              Our advisor calls within 2 hours, weekdays. Share what you&rsquo;re looking for and
-              we&rsquo;ll bring you 3 options that match.
+            <p className="mt-4 text-ink leading-relaxed max-w-2xl">
+              Whether you&rsquo;re a developer with a project to launch, a channel partner bringing
+              a buyer, or a home buyer hunting for the right address, the right person at Flow gets
+              back to you within two hours.
             </p>
           </SectionReveal>
 
           <SectionReveal className="mt-10">
-            <div className="glass rounded-3xl p-6 sm:p-8">
-              <EnquireForm />
+            <div className="glass-strong rounded-3xl p-6 sm:p-8">
+              <EnquireBlock initial={initial} />
             </div>
           </SectionReveal>
         </div>

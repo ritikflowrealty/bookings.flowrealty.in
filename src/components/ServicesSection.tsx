@@ -40,13 +40,6 @@ const services = [
     image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80&auto=format&fit=crop',
     href: '/services#crm',
   },
-  {
-    number: '06',
-    title: 'Terra by Flow',
-    body: 'Specialised vertical for plotted developments. Land monetisation and plot sales execution.',
-    image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&q=80&auto=format&fit=crop',
-    href: '/services#terra',
-  },
 ];
 
 export function ServicesSection() {
@@ -173,7 +166,7 @@ export function ServicesSection() {
                   className="absolute bottom-0 left-0 right-0 p-6"
                 >
                   <p className="text-xs uppercase tracking-[0.18em] text-ink-muted">
-                    {services[activeIdx].number} / 06
+                    {services[activeIdx].number} / 0{services.length}
                   </p>
                   <h4 className="mt-1 font-heading uppercase text-2xl text-ink">
                     {services[activeIdx].title}

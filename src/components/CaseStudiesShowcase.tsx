@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 
 type CS = {
   id: number;
@@ -20,30 +20,30 @@ type CS = {
 };
 
 export function CaseStudiesShowcase({ items }: { items: CS[] }) {
+  const trackRef = useRef<HTMLDivElement>(null);
+
   return (
-    <div className="mx-auto max-w-7xl px-5 lg:px-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
-        {items.map((c, i) => (
-          <Card key={c.id} cs={c} index={i} />
-        ))}
+    <div className="relative">
+      <div
+        ref={trackRef}
+        className="overflow-x-auto snap-x snap-mandatory pb-4 [scrollbar-width:none]"
+      >
+        <div className="flex gap-5 lg:gap-6 px-5 lg:pl-[max(2rem,calc((100vw-1280px)/2+2rem))] lg:pr-[max(2rem,calc((100vw-1280px)/2+2rem))]">
+          {items.map((c, i) => (
+            <Card key={c.id} cs={c} index={i} />
+          ))}
+        </div>
       </div>
+      <style jsx>{`
+        div::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 }
 
 function Card({ cs, index }: { cs: CS; index: number }) {
-  const ref = useRef<HTMLAnchorElement>(null);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-
-  function onMouseMove(e: React.MouseEvent) {
-    const el = ref.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const x = (e.clientX - r.left) / r.width - 0.5;
-    const y = (e.clientY - r.top) / r.height - 0.5;
-    setTilt({ x: x * 10, y: -y * 10 });
-  }
-
   const metrics = [
     { l: cs.metric_1_label, v: cs.metric_1_value },
     { l: cs.metric_2_label, v: cs.metric_2_value },
@@ -55,20 +55,12 @@ function Card({ cs, index }: { cs: CS; index: number }) {
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.6, delay: index * 0.08 }}
-      style={{ perspective: '1200px' }}
+      transition={{ duration: 0.5, delay: index * 0.06 }}
+      className="snap-start flex-shrink-0 w-[80%] sm:w-[60%] md:w-[420px] lg:w-[440px]"
     >
       <Link
-        ref={ref}
         href={`/case-studies/${cs.slug}`}
-        onMouseMove={onMouseMove}
-        onMouseLeave={() => setTilt({ x: 0, y: 0 })}
         className="group block relative rounded-3xl overflow-hidden glass-strong h-full transition-shadow hover:shadow-glow"
-        style={{
-          transform: `rotateY(${tilt.x}deg) rotateX(${tilt.y}deg)`,
-          transition: 'transform 0.4s ease',
-          transformStyle: 'preserve-3d',
-        }}
       >
         <div className="relative aspect-[16/10] overflow-hidden bg-white/[0.03]">
           {cs.cover_image_url ? (
@@ -89,7 +81,7 @@ function Card({ cs, index }: { cs: CS; index: number }) {
           )}
         </div>
         <div className="p-5 sm:p-6">
-          <h3 className="font-heading uppercase text-xl leading-tight tracking-tight">
+          <h3 className="font-heading uppercase text-lg sm:text-xl leading-tight tracking-tight">
             {cs.title}
           </h3>
           {cs.excerpt && (
@@ -98,10 +90,12 @@ function Card({ cs, index }: { cs: CS; index: number }) {
             </p>
           )}
           {metrics.length > 0 && (
-            <div className="mt-5 grid grid-cols-3 gap-3 pt-4 border-t border-white/10">
+            <div className="mt-4 grid grid-cols-3 gap-3 pt-4 border-t border-white/10">
               {metrics.map((m, i) => (
                 <div key={i}>
-                  <p className="font-display text-lg sm:text-xl neon-text leading-none">{m.v}</p>
+                  <p className="font-display text-base sm:text-lg neon-text leading-none font-bold">
+                    {m.v}
+                  </p>
                   <p className="text-[10px] uppercase tracking-[0.12em] text-ink-dim mt-1.5 leading-tight">
                     {m.l}
                   </p>

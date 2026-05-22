@@ -2,7 +2,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Hero } from '@/components/Hero';
 import { StatsCounter } from '@/components/StatsCounter';
-import { WhyFlowOrbit } from '@/components/WhyFlowOrbit';
+import { WhyFlowSection } from '@/components/WhyFlowSection';
 import { ServicesSection } from '@/components/ServicesSection';
 import { CaseStudiesPreview } from '@/components/CaseStudiesPreview';
 import { TestimonialsSection } from '@/components/TestimonialsSection';
@@ -10,6 +10,7 @@ import { PartnersSection } from '@/components/PartnersSection';
 import { FounderCreds } from '@/components/FounderCreds';
 import { AwardsHomeStrip } from '@/components/AwardsHomeStrip';
 import { StoryHeadline } from '@/components/StoryHeadline';
+import { EnquireBlock } from '@/components/EnquireBlock';
 import { SectionReveal } from '@/components/SectionReveal';
 import { getSettings, setting } from '@/lib/settings';
 
@@ -40,12 +41,6 @@ export default async function HomePage() {
     'about_paragraph',
     'Banks won\u2019t lend without sales. Buyers won\u2019t buy without confidence. We break that cycle. From cashflow stress to sold-out projects, Flow Realty is India\u2019s leading sales and marketing outsourcing partner.'
   );
-  const careersHeadline = setting(s, 'careers_headline', 'We\u2019re building the future of real estate sales.');
-  const careersSubline = setting(
-    s,
-    'careers_subline',
-    'Sharp people in sales, marketing, tech, and operations. If you want to be part of the team that powers India\u2019s biggest real estate sales engine, let\u2019s talk.'
-  );
 
   return (
     <>
@@ -55,7 +50,7 @@ export default async function HomePage() {
         <Hero />
 
         {/* 2. Story headline with strike-through animation */}
-        <section className="py-14 lg:py-20 relative overflow-hidden">
+        <section className="py-8 lg:py-12 relative overflow-hidden">
           <div className="mx-auto max-w-7xl px-5 lg:px-8">
             <StoryHeadline
               prefix="REAL ESTATE'S #1 CHALLENGE IS"
@@ -73,7 +68,7 @@ export default async function HomePage() {
         <FounderCreds />
 
         {/* 5. Why Flow? — horizontal slide tiles */}
-        <WhyFlowOrbit />
+        <WhyFlowSection />
 
         {/* 6. Our Services — magazine-style numbered list with sticky preview */}
         <ServicesSection />
@@ -90,25 +85,24 @@ export default async function HomePage() {
         {/* 10. Testimonials */}
         <TestimonialsSection />
 
-        {/* 11. Careers CTA */}
-        <section className="py-14 lg:py-20">
+        {/* 11. Enquire Now (Developer / CP / Buyer) */}
+        <section id="enquire" className="py-14 lg:py-20">
           <div className="mx-auto max-w-7xl px-5 lg:px-8">
             <SectionReveal>
-              <div className="glass-strong rounded-3xl p-8 sm:p-12 lg:p-16 relative overflow-hidden">
-                <div
-                  aria-hidden="true"
-                  className="absolute -top-20 -right-20 w-[400px] h-[400px] rounded-full opacity-30 blur-3xl"
-                  style={{ background: 'radial-gradient(closest-side, rgba(123,46,255,0.6), transparent 70%)' }}
-                />
-                <div className="relative max-w-3xl">
-                  <span className="chip">Join the Flow</span>
-                  <h2 className="mt-4 font-heading uppercase text-3xl sm:text-4xl tracking-tight">
-                    {careersHeadline}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div className="lg:col-span-5">
+                  <span className="chip">Enquire Now</span>
+                  <h2 className="mt-3 font-heading uppercase text-3xl sm:text-4xl tracking-tight leading-[1.05]">
+                    Tell us who you are. We&rsquo;ll take it from there.
                   </h2>
-                  <p className="mt-3 text-ink-muted">{careersSubline}</p>
-                  <a href="/careers" className="btn-neon mt-8 inline-flex">
-                    View open roles
-                  </a>
+                  <p className="mt-4 text-ink leading-relaxed">
+                    Whether you&rsquo;re a developer with a project to launch, a channel partner
+                    bringing a buyer, or a home buyer hunting for the right address, the right
+                    person at Flow gets back to you within two hours.
+                  </p>
+                </div>
+                <div className="lg:col-span-7 glass-strong rounded-3xl p-6 sm:p-8 lg:p-10">
+                  <EnquireBlock initial="developer" />
                 </div>
               </div>
             </SectionReveal>

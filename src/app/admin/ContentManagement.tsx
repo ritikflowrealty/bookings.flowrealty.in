@@ -125,6 +125,18 @@ const ENTITIES: Record<string, { label: string; fields: Field[] }> = {
       { key: 'is_published', label: 'Published', type: 'boolean' },
     ],
   },
+  verticals: {
+    label: 'Why Flow Verticals',
+    fields: [
+      { key: 'number', label: 'Number (e.g. 01)', type: 'text' },
+      { key: 'title', label: 'Title', type: 'text', full: true },
+      { key: 'body', label: 'Description', type: 'textarea', full: true },
+      { key: 'status', label: 'Status', type: 'select', options: ['Ongoing Projects', 'Coming Soon'] },
+      { key: 'image_url', label: 'Background image', type: 'image', full: true, hint: '1000x800px or larger, JPG/WebP' },
+      { key: 'display_order', label: 'Display order', type: 'number' },
+      { key: 'is_published', label: 'Published', type: 'boolean' },
+    ],
+  },
 };
 
 export function ContentManagement({ authHeader }: { authHeader: () => HeadersInit }) {
