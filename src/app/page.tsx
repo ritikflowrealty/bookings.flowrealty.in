@@ -2,8 +2,8 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Hero } from '@/components/Hero';
 import { StatsCounter } from '@/components/StatsCounter';
+import { OurVerticalsSection } from '@/components/OurVerticalsSection';
 import { WhyFlowSection } from '@/components/WhyFlowSection';
-import { ServicesSection } from '@/components/ServicesSection';
 import { CaseStudiesPreview } from '@/components/CaseStudiesPreview';
 import { TestimonialsSection } from '@/components/TestimonialsSection';
 import { PartnersSection } from '@/components/PartnersSection';
@@ -67,11 +67,11 @@ export default async function HomePage() {
         {/* 4. Founders — 3D cutout stage */}
         <FounderCreds />
 
-        {/* 5. Why Flow? — horizontal slide tiles */}
-        <WhyFlowSection />
+        {/* 5. Our Verticals — horizontal slide tiles */}
+        <OurVerticalsSection />
 
-        {/* 6. Our Services — magazine-style numbered list with sticky preview */}
-        <ServicesSection />
+        {/* 6. Why Flow? — magazine-style numbered list with sticky preview */}
+        <WhyFlowSection />
 
         {/* 7. Awards */}
         <AwardsHomeStrip />

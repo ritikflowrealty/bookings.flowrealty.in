@@ -30,7 +30,7 @@ export async function FAQSection({
   if (items.length === 0) return null;
 
   return (
-    <section className="py-12 lg:py-16">
+    <section className="py-14 lg:py-20">
       <div className="mx-auto max-w-3xl px-5 lg:px-8">
         <h2 className="font-heading uppercase text-2xl sm:text-3xl tracking-tight">{title}</h2>
         <div className="mt-6">

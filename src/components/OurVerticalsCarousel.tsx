@@ -22,7 +22,7 @@ const CARD_W = 360; // desktop card width (px)
 const CARD_H = 440; // desktop card height (px)
 const GAP = 20;
 
-export function WhyFlowOrbit({ verticals }: { verticals: Vertical[] }) {
+export function OurVerticalsCarousel({ verticals }: { verticals: Vertical[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [bounds, setBounds] = useState({ left: 0, right: 0 });
@@ -86,7 +86,7 @@ export function WhyFlowOrbit({ verticals }: { verticals: Vertical[] }) {
   }
 
   return (
-    <section id="why-flow" className="py-12 lg:py-16 overflow-hidden">
+    <section id="why-flow" className="py-14 lg:py-20 overflow-hidden">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="max-w-2xl mb-8 lg:mb-10">
           <span className="chip">Our Verticals</span>

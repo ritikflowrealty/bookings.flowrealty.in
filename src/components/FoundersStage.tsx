@@ -44,7 +44,7 @@ export function FoundersStage({ founders }: { founders: FounderStageItem[] }) {
   if (founders.length === 0) return null;
 
   return (
-    <section className="py-12 lg:py-16 overflow-hidden">
+    <section className="pt-9 pb-14 lg:pt-12 lg:pb-20 overflow-hidden">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="max-w-2xl mb-8 lg:mb-10">
           <span className="chip">Leadership</span>
