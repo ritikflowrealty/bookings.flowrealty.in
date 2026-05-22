@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 const links = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
-  { href: '/services', label: 'Services' },
+  { href: '/#why-flow', label: 'Why Flow?' },
   { href: '/team', label: 'Team' },
   { href: '/projects', label: 'Projects' },
   { href: '/case-studies', label: 'Work' },

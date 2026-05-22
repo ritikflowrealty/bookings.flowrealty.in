@@ -2,12 +2,11 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Hero } from '@/components/Hero';
 import { StatsCounter } from '@/components/StatsCounter';
-import { ServicesSection } from '@/components/ServicesSection';
+import { WhyFlowOrbit } from '@/components/WhyFlowOrbit';
 import { CaseStudiesPreview } from '@/components/CaseStudiesPreview';
 import { TestimonialsSection } from '@/components/TestimonialsSection';
 import { PartnersSection } from '@/components/PartnersSection';
 import { FounderCreds } from '@/components/FounderCreds';
-import { WhyChooseUs } from '@/components/WhyChooseUs';
 import { AwardsHomeStrip } from '@/components/AwardsHomeStrip';
 import { StoryHeadline } from '@/components/StoryHeadline';
 import { SectionReveal } from '@/components/SectionReveal';
@@ -72,13 +71,10 @@ export default async function HomePage() {
         {/* 4. Founders — 3D cutout stage */}
         <FounderCreds />
 
-        {/* 5. Why Choose Us */}
-        <WhyChooseUs />
+        {/* 5. Why Flow? — circular orbit of verticals */}
+        <WhyFlowOrbit />
 
-        {/* 6. Services */}
-        <ServicesSection />
-
-        {/* 7. Awards */}
+        {/* 6. Awards */}
         <AwardsHomeStrip />
 
         {/* 8. Partners (developers + banking) */}
