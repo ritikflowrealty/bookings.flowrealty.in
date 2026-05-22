@@ -3,6 +3,7 @@ import { Footer } from '@/components/Footer';
 import { Hero } from '@/components/Hero';
 import { StatsCounter } from '@/components/StatsCounter';
 import { WhyFlowOrbit } from '@/components/WhyFlowOrbit';
+import { ServicesSection } from '@/components/ServicesSection';
 import { CaseStudiesPreview } from '@/components/CaseStudiesPreview';
 import { TestimonialsSection } from '@/components/TestimonialsSection';
 import { PartnersSection } from '@/components/PartnersSection';
@@ -71,10 +72,13 @@ export default async function HomePage() {
         {/* 4. Founders — 3D cutout stage */}
         <FounderCreds />
 
-        {/* 5. Why Flow? — circular orbit of verticals */}
+        {/* 5. Why Flow? — horizontal slide tiles */}
         <WhyFlowOrbit />
 
-        {/* 6. Awards */}
+        {/* 6. Our Services — magazine-style numbered list with sticky preview */}
+        <ServicesSection />
+
+        {/* 7. Awards */}
         <AwardsHomeStrip />
 
         {/* 8. Partners (developers + banking) */}
