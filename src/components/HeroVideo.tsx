@@ -87,6 +87,10 @@ export function HeroVideo({
   return (
     <div className="relative w-full h-[calc(100vh-72px)] overflow-hidden">
       <video
+        // Force a brand-new <video> element per URL so React re-mounts on every
+        // route change. Without this, client-side navigation reuses the old DOM
+        // node which leaves the video in its paused state.
+        key={videoUrl}
         ref={ref}
         src={videoUrl}
         poster={posterUrl}
@@ -95,8 +99,6 @@ export function HeroVideo({
         loop
         playsInline
         preload="auto"
-        // Fully decorative. Helps some browsers honour autoplay.
-        // eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role
         aria-hidden="true"
         className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
           ready ? 'opacity-100' : 'opacity-0'

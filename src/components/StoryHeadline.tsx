@@ -46,25 +46,29 @@ export function StoryHeadline({
       <h2 className="font-heading uppercase text-2xl sm:text-3xl lg:text-5xl tracking-tight leading-[1.1]">
         {prefix}{' '}
         <span className="inline-grid align-baseline">
-          {/* Decoy "SALES." — visible by default, struck-through on scroll-in */}
+          {/* Decoy "SALES." — visible by default, struck-through on scroll-in.
+              The inner inline-block sizes to the decoy text only, so the
+              strike line matches the SALES width (not the wider CASHFLOW. cell). */}
           <motion.span
-            className="row-start-1 col-start-1 relative whitespace-nowrap"
+            className="row-start-1 col-start-1 whitespace-nowrap"
             initial={{ opacity: 1 }}
             animate={inView ? { opacity: 0 } : { opacity: 1 }}
             transition={{ duration: 0.5, delay: 1.1, ease: 'easeOut' }}
             aria-hidden={inView}
           >
-            <span className="text-ink-muted">{decoy}</span>
-            <motion.span
-              aria-hidden="true"
-              initial={{ scaleX: 0 }}
-              animate={inView ? { scaleX: 1 } : { scaleX: 0 }}
-              transition={{ duration: 0.55, delay: 0.2, ease: 'easeOut' }}
-              className="absolute left-0 right-0 top-1/2 -translate-y-1/2 origin-left h-[3px] sm:h-[4px] lg:h-[5px] rounded-full"
-              style={{
-                background: 'linear-gradient(90deg,#7B2EFF,#D92EFF,#FF3C82,#FF6A00)',
-              }}
-            />
+            <span className="relative inline-block">
+              <span className="text-ink-muted">{decoy}</span>
+              <motion.span
+                aria-hidden="true"
+                initial={{ scaleX: 0 }}
+                animate={inView ? { scaleX: 1 } : { scaleX: 0 }}
+                transition={{ duration: 0.55, delay: 0.2, ease: 'easeOut' }}
+                className="absolute left-0 right-0 top-1/2 -translate-y-1/2 origin-left h-[3px] sm:h-[4px] lg:h-[5px] rounded-full"
+                style={{
+                  background: 'linear-gradient(90deg,#7B2EFF,#D92EFF,#FF3C82,#FF6A00)',
+                }}
+              />
+            </span>
           </motion.span>
 
           {/* Reveal "CASHFLOW." — fades in after the strike completes */}
