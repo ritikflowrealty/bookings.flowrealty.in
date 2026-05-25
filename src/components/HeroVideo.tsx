@@ -5,15 +5,13 @@ import { useEffect, useRef, useState } from 'react';
 /**
  * Full-viewport autoplay video banner. Covers 100vh minus navbar height.
  *
- * Browsers only autoplay when:
- *   - the video is muted (or has no audio track), AND
- *   - the user has interacted with the page at least once on this origin, OR
- *   - the page is the active tab.
- *
- * Even with `autoPlay muted playsInline`, autoplay can fail silently after a
- * client-side route change (Next.js doesn't trigger a fresh load). We force
- * a play() call on mount, with a fallback retry, and try again on the first
- * user interaction if the browser blocks autoplay.
+ * Speed strategy:
+ *  - Show the poster at full opacity from frame 1, so the user never sees a
+ *    black hole during buffer.
+ *  - Flip the video to visible on `loadeddata` (first frame decoded) instead
+ *    of waiting for `playing` (full motion confirmed).
+ *  - Force `play()` on every meaningful event, with retries.
+ *  - Fall back to first user interaction if the browser blocks autoplay.
  */
 export function HeroVideo({
   videoUrl,
@@ -23,14 +21,12 @@ export function HeroVideo({
   posterUrl?: string;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
-  const [ready, setReady] = useState(false);
+  const [hasFrame, setHasFrame] = useState(false);
 
   useEffect(() => {
     const v = ref.current;
     if (!v) return;
 
-    // Force properties at the JS level — `autoplay` attribute alone is not
-    // always honoured after client-side navigation.
     v.muted = true;
     v.defaultMuted = true;
     v.playsInline = true;
@@ -43,7 +39,6 @@ export function HeroVideo({
       const p = v.play();
       if (p && typeof p.catch === 'function') {
         p.catch(() => {
-          // Browser blocked autoplay. Retry on first user interaction.
           const onInteract = () => {
             v.play().catch(() => {});
             window.removeEventListener('pointerdown', onInteract);
@@ -57,19 +52,25 @@ export function HeroVideo({
       }
     }
 
-    const onPlaying = () => setReady(true);
+    const onLoadedData = () => {
+      setHasFrame(true);
+      tryPlay();
+    };
     const onCanPlay = () => tryPlay();
     const onLoadedMeta = () => tryPlay();
+    const onPlaying = () => setHasFrame(true);
 
-    v.addEventListener('playing', onPlaying);
+    v.addEventListener('loadeddata', onLoadedData);
     v.addEventListener('canplay', onCanPlay);
     v.addEventListener('loadedmetadata', onLoadedMeta);
+    v.addEventListener('playing', onPlaying);
 
-    // If readyState already advanced before listeners attached, kick off now.
-    if (v.readyState >= 2) tryPlay();
-    else v.load(); // ensure source is loaded after route change
+    if (v.readyState >= 2) {
+      onLoadedData();
+    } else {
+      v.load();
+    }
 
-    // Resume play when tab becomes visible again.
     const onVisibility = () => {
       if (document.visibilityState === 'visible' && v.paused) tryPlay();
     };
@@ -77,19 +78,31 @@ export function HeroVideo({
 
     return () => {
       cancelled = true;
-      v.removeEventListener('playing', onPlaying);
+      v.removeEventListener('loadeddata', onLoadedData);
       v.removeEventListener('canplay', onCanPlay);
       v.removeEventListener('loadedmetadata', onLoadedMeta);
+      v.removeEventListener('playing', onPlaying);
       document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [videoUrl]);
 
   return (
-    <div className="relative w-full h-[calc(100vh-72px)] overflow-hidden">
+    <div className="relative w-full h-[calc(100vh-72px)] overflow-hidden bg-bg">
+      {/* Poster shown immediately at full opacity. Hides only once a video
+          frame is on screen, so there is never a flash of empty space. */}
+      {posterUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={posterUrl}
+          alt=""
+          aria-hidden="true"
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
+            hasFrame ? 'opacity-0' : 'opacity-100'
+          }`}
+        />
+      )}
+
       <video
-        // Force a brand-new <video> element per URL so React re-mounts on every
-        // route change. Without this, client-side navigation reuses the old DOM
-        // node which leaves the video in its paused state.
         key={videoUrl}
         ref={ref}
         src={videoUrl}
@@ -100,18 +113,10 @@ export function HeroVideo({
         playsInline
         preload="auto"
         aria-hidden="true"
-        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
-          ready ? 'opacity-100' : 'opacity-0'
+        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
+          hasFrame ? 'opacity-100' : 'opacity-0'
         }`}
       />
-      {posterUrl && !ready && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={posterUrl}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-      )}
     </div>
   );
 }
