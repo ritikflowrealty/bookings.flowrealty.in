@@ -22,6 +22,9 @@ type Editable = {
   cashfree_app_id: string;
   cashfree_secret_key_new: string;
   cashfree_mode: string;
+  payu_merchant_key: string;
+  payu_salt_new: string;
+  payu_mode: string;
   crm_endpoint: string;
   crm_form_data: string;
   crm_company_id: string;
@@ -49,6 +52,9 @@ const empty: Editable = {
   cashfree_app_id: '',
   cashfree_secret_key_new: '',
   cashfree_mode: 'test',
+  payu_merchant_key: '',
+  payu_salt_new: '',
+  payu_mode: 'test',
   crm_endpoint: '',
   crm_form_data: '',
   crm_company_id: '',
@@ -90,6 +96,9 @@ export function ProjectEditor({
           cashfree_app_id: project.cashfree_app_id || '',
           cashfree_secret_key_new: '',
           cashfree_mode: project.cashfree_mode || 'test',
+          payu_merchant_key: project.payu_merchant_key || '',
+          payu_salt_new: '',
+          payu_mode: project.payu_mode || 'test',
           crm_endpoint: project.crm_endpoint || '',
           crm_form_data: project.crm_form_data || '',
           crm_company_id: project.crm_company_id || '',
@@ -134,6 +143,8 @@ export function ProjectEditor({
         razorpay_key_id: form.razorpay_key_id,
         cashfree_app_id: form.cashfree_app_id,
         cashfree_mode: form.cashfree_mode,
+        payu_merchant_key: form.payu_merchant_key,
+        payu_mode: form.payu_mode,
         crm_endpoint: form.crm_endpoint,
         crm_form_data: form.crm_form_data,
         crm_company_id: form.crm_company_id,
@@ -146,6 +157,9 @@ export function ProjectEditor({
       }
       if (form.cashfree_secret_key_new) {
         payload.cashfree_secret_key = form.cashfree_secret_key_new;
+      }
+      if (form.payu_salt_new) {
+        payload.payu_salt = form.payu_salt_new;
       }
 
       let url = '/api/admin/projects';
@@ -258,7 +272,7 @@ export function ProjectEditor({
             <p className="label">Payment gateway (only one active per project)</p>
           </div>
           <div className="sm:col-span-2">
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <label className={`flex-1 glass rounded-xl p-4 cursor-pointer border-2 transition ${form.payment_provider === 'razorpay' ? 'border-neon-magenta/60' : 'border-transparent'}`}>
                 <input
                   type="radio"
@@ -280,6 +294,17 @@ export function ProjectEditor({
                   className="mr-2 accent-[#D92EFF]"
                 />
                 <span className="font-medium">Cashfree</span>
+              </label>
+              <label className={`flex-1 glass rounded-xl p-4 cursor-pointer border-2 transition ${form.payment_provider === 'payu' ? 'border-neon-magenta/60' : 'border-transparent'}`}>
+                <input
+                  type="radio"
+                  name="payment_provider"
+                  value="payu"
+                  checked={form.payment_provider === 'payu'}
+                  onChange={() => set('payment_provider', 'payu')}
+                  className="mr-2 accent-[#D92EFF]"
+                />
+                <span className="font-medium">PayU</span>
               </label>
             </div>
           </div>
@@ -329,6 +354,40 @@ export function ProjectEditor({
                   <option value="test">Sandbox (Test)</option>
                   <option value="production">Production (Live)</option>
                 </select>
+              </div>
+            </>
+          )}
+
+          {/* PayU credentials */}
+          {form.payment_provider === 'payu' && (
+            <>
+              <Input
+                label="PayU Merchant Key"
+                value={form.payu_merchant_key}
+                onChange={(v) => set('payu_merchant_key', v)}
+                placeholder="e.g. gtKFFx (test) or your live key"
+              />
+              <Input
+                label={form.id ? 'New PayU Salt (leave blank to keep)' : 'PayU Salt (V1)'}
+                value={form.payu_salt_new}
+                onChange={(v) => set('payu_salt_new', v)}
+                type="password"
+                placeholder="••••••••"
+              />
+              <div>
+                <span className="label block mb-1.5">PayU Mode</span>
+                <select
+                  value={form.payu_mode}
+                  onChange={(e) => set('payu_mode', e.target.value)}
+                  className="input"
+                >
+                  <option value="test">Sandbox (test.payu.in)</option>
+                  <option value="production">Production (secure.payu.in)</option>
+                </select>
+              </div>
+              <div className="sm:col-span-2 text-xs text-ink-dim leading-relaxed">
+                PayU uses a hosted checkout page (not a modal). Buyers will be
+                redirected to PayU and back to your booking confirmation.
               </div>
             </>
           )}

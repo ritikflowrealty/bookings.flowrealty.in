@@ -43,6 +43,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         { status: 400 }
       );
     }
+    if (provider === 'payu' && !(row as any).payu_active) {
+      return NextResponse.json(
+        { ok: false, message: 'Configure PayU Merchant Key and Salt first.' },
+        { status: 400 }
+      );
+    }
   }
 
   await db.execute({

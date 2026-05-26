@@ -132,6 +132,8 @@ export function BookingForm({
 
       if (data.provider === 'cashfree') {
         await handleCashfree(data);
+      } else if (data.provider === 'payu') {
+        handlePayu(data);
       } else {
         await handleRazorpay(data);
       }
@@ -235,13 +237,45 @@ export function BookingForm({
     });
   }
 
+  /**
+   * PayU uses a hosted-page redirect via form POST. We construct a hidden form
+   * with the server-signed fields and submit it — the browser navigates away
+   * to PayU's checkout page. PayU posts back to /api/bookings/payu-callback.
+   */
+  function handlePayu(data: { payu_url: string; payu_fields: Record<string, string> }) {
+    if (!data.payu_url || !data.payu_fields) {
+      setGlobalError('PayU response was incomplete.');
+      setRetryCount((c) => c + 1);
+      setSubmitting(false);
+      return;
+    }
+    const formEl = document.createElement('form');
+    formEl.method = 'POST';
+    formEl.action = data.payu_url;
+    formEl.style.display = 'none';
+    for (const [name, value] of Object.entries(data.payu_fields)) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = String(value ?? '');
+      formEl.appendChild(input);
+    }
+    document.body.appendChild(formEl);
+    formEl.submit();
+  }
+
   const payLabel = (() => {
     const n = Number(form.amount);
     if (!Number.isFinite(n) || n <= 0) return 'Pay';
     return `Pay ₹${n.toLocaleString('en-IN')}`;
   })();
 
-  const providerName = project.payment_provider === 'cashfree' ? 'Cashfree' : 'Razorpay';
+  const providerName =
+    project.payment_provider === 'cashfree'
+      ? 'Cashfree'
+      : project.payment_provider === 'payu'
+        ? 'PayU'
+        : 'Razorpay';
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-5">

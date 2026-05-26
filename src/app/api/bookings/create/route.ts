@@ -4,6 +4,7 @@ import { createBooking, attachOrder } from '@/lib/bookings';
 import { validateBookingPayload, sanitizeText } from '@/lib/validation';
 import { createRazorpayOrder } from '@/lib/razorpay';
 import { createCashfreeOrder } from '@/lib/cashfree';
+import { buildPayuFormPayload } from '@/lib/payu';
 import { audit } from '@/lib/audit';
 
 export const runtime = 'nodejs';
@@ -44,6 +45,13 @@ export async function POST(req: NextRequest) {
       if (!project.cashfree_active || !project.cashfree_app_id || !project.cashfree_secret_key) {
         return NextResponse.json(
           { ok: false, message: 'Cashfree is not configured for this project.' },
+          { status: 409 }
+        );
+      }
+    } else if (provider === 'payu') {
+      if (!project.payu_active || !project.payu_merchant_key || !project.payu_salt) {
+        return NextResponse.json(
+          { ok: false, message: 'PayU is not configured for this project.' },
           { status: 409 }
         );
       }
@@ -114,7 +122,7 @@ export async function POST(req: NextRequest) {
         amount_paise: order.amount,
         razorpay_key_id: project.razorpay_key_id,
       });
-    } else {
+    } else if (provider === 'cashfree') {
       // Cashfree
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://booking.flowrealty.in';
       const returnUrl = `${siteUrl}/booking/cashfree-return?ref=${encodeURIComponent(booking.reference_number)}`;
@@ -149,6 +157,49 @@ export async function POST(req: NextRequest) {
         order_id: cfOrder.orderId,
         payment_session_id: cfOrder.paymentSessionId,
         cashfree_mode: project.cashfree_mode || 'test',
+      });
+    } else {
+      // PayU — form-post redirect flow
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://booking.flowrealty.in';
+      const surl = `${siteUrl}/api/bookings/payu-callback`;
+      const furl = `${siteUrl}/api/bookings/payu-callback`;
+
+      const payload = buildPayuFormPayload({
+        merchantKey: project.payu_merchant_key,
+        salt: project.payu_salt,
+        mode: project.payu_mode || 'test',
+        txnid: booking.reference_number,
+        amountInRupees: booking.amount,
+        productInfo: `${project.name} - ${booking.tower_unit}`.slice(0, 100),
+        firstName: booking.full_name.split(' ')[0] || booking.full_name,
+        lastName: booking.full_name.split(' ').slice(1).join(' '),
+        email: booking.email,
+        phone: booking.mobile,
+        address1: booking.address,
+        city: booking.city,
+        zipcode: booking.pincode,
+        country: 'India',
+        surl,
+        furl,
+        notes,
+      });
+
+      await attachOrder(booking.id, booking.reference_number);
+      await audit('booking.created', {
+        booking_id: booking.id,
+        reference: booking.reference_number,
+        project_id: project.id,
+        amount: booking.amount,
+        provider: 'payu',
+      });
+
+      return NextResponse.json({
+        ok: true,
+        provider: 'payu',
+        booking_id: booking.id,
+        reference_number: booking.reference_number,
+        payu_url: payload.url,
+        payu_fields: payload.fields,
       });
     }
   } catch (err: any) {

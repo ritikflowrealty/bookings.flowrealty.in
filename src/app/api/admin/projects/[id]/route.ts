@@ -35,7 +35,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const trust_point_3 = sanitizeText(body.trust_point_3 ?? row.trust_point_3, 200);
 
   // Payment provider (mutex: only one active)
-  const payment_provider = (body.payment_provider === 'cashfree' ? 'cashfree' : 'razorpay');
+  const payment_provider =
+    body.payment_provider === 'cashfree'
+      ? 'cashfree'
+      : body.payment_provider === 'payu'
+        ? 'payu'
+        : 'razorpay';
 
   // Razorpay keys
   const razorpay_key_id =
@@ -59,6 +64,18 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       : row.cashfree_secret_key;
   const cashfree_active = cashfree_app_id && cashfree_secret_key ? 1 : 0;
   const cashfree_mode = body.cashfree_mode === 'production' ? 'production' : 'test';
+
+  // PayU credentials
+  const payu_merchant_key =
+    body.payu_merchant_key !== undefined && body.payu_merchant_key !== ''
+      ? sanitizeText(body.payu_merchant_key, 120)
+      : (row as any).payu_merchant_key || '';
+  const payu_salt =
+    body.payu_salt !== undefined && body.payu_salt !== ''
+      ? sanitizeText(body.payu_salt, 200)
+      : (row as any).payu_salt || '';
+  const payu_active = payu_merchant_key && payu_salt ? 1 : 0;
+  const payu_mode = body.payu_mode === 'production' ? 'production' : 'test';
 
   // External CRM
   const crm_endpoint = sanitizeText(body.crm_endpoint ?? (row as any).crm_endpoint ?? '', 500);
@@ -89,6 +106,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         { status: 400 }
       );
     }
+    if (payment_provider === 'payu' && !payu_active) {
+      return NextResponse.json(
+        { ok: false, message: 'Cannot enable payment. PayU Merchant Key and Salt are not set.' },
+        { status: 400 }
+      );
+    }
   }
 
   await db.execute({
@@ -99,6 +122,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             payment_provider = ?,
             razorpay_key_id = ?, razorpay_key_secret = ?, razorpay_active = ?,
             cashfree_app_id = ?, cashfree_secret_key = ?, cashfree_active = ?, cashfree_mode = ?,
+            payu_merchant_key = ?, payu_salt = ?, payu_active = ?, payu_mode = ?,
             crm_endpoint = ?, crm_form_data = ?, crm_company_id = ?, crm_access_token = ?, crm_api_key = ?, crm_project_name = ?,
             is_visible = ?, booking_enabled = ?, payment_enabled = ?,
             updated_at = datetime('now')
@@ -110,6 +134,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       payment_provider,
       razorpay_key_id, razorpay_key_secret, razorpay_active,
       cashfree_app_id, cashfree_secret_key, cashfree_active, cashfree_mode,
+      payu_merchant_key, payu_salt, payu_active, payu_mode,
       crm_endpoint, crm_form_data, crm_company_id, crm_access_token, crm_api_key, crm_project_name,
       is_visible, booking_enabled, payment_enabled,
       id,

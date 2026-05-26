@@ -35,6 +35,10 @@ type AdminProject = {
   cashfree_active: number;
   cashfree_mode: string;
   payment_provider: string;
+  payu_merchant_key: string;
+  payu_salt: string;
+  payu_active: number;
+  payu_mode: string;
   is_visible: number;
   booking_enabled: number;
   payment_enabled: number;
@@ -202,9 +206,13 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                     <h3 className="mt-1 font-display text-xl">{p.name}</h3>
                     <p className="text-xs text-ink-dim mt-0.5">/{p.slug}</p>
                   </div>
-                  {p.razorpay_active || p.cashfree_active ? (
+                  {p.razorpay_active || p.cashfree_active || p.payu_active ? (
                     <span className="chip text-emerald-300 border-emerald-300/20">
-                      {p.payment_provider === 'cashfree' ? 'Cashfree' : 'Razorpay'}
+                      {p.payment_provider === 'cashfree'
+                        ? 'Cashfree'
+                        : p.payment_provider === 'payu'
+                          ? 'PayU'
+                          : 'Razorpay'}
                     </span>
                   ) : (
                     <span className="chip text-amber-300 border-amber-300/20">No keys</span>
@@ -221,13 +229,13 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                     label="Booking"
                     value={!!p.booking_enabled}
                     onChange={(v) => toggle(p.id, 'booking_enabled', v)}
-                    disabled={!(p.razorpay_active || p.cashfree_active)}
+                    disabled={!(p.razorpay_active || p.cashfree_active || p.payu_active)}
                   />
                   <Toggle
                     label="Payment"
                     value={!!p.payment_enabled}
                     onChange={(v) => toggle(p.id, 'payment_enabled', v)}
-                    disabled={!(p.razorpay_active || p.cashfree_active)}
+                    disabled={!(p.razorpay_active || p.cashfree_active || p.payu_active)}
                   />
                 </div>
 

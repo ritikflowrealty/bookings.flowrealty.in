@@ -91,6 +91,11 @@ async function runMigrations(db: Client): Promise<void> {
     `ALTER TABLE projects ADD COLUMN cashfree_active INTEGER NOT NULL DEFAULT 0`,
     `ALTER TABLE projects ADD COLUMN cashfree_mode TEXT DEFAULT 'test'`,
     `ALTER TABLE projects ADD COLUMN payment_provider TEXT NOT NULL DEFAULT 'razorpay'`,
+    // PayU
+    `ALTER TABLE projects ADD COLUMN payu_merchant_key TEXT DEFAULT ''`,
+    `ALTER TABLE projects ADD COLUMN payu_salt TEXT DEFAULT ''`,
+    `ALTER TABLE projects ADD COLUMN payu_active INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE projects ADD COLUMN payu_mode TEXT DEFAULT 'test'`,
     `ALTER TABLE projects ADD COLUMN brochure_url TEXT DEFAULT ''`,
     `ALTER TABLE projects ADD COLUMN trust_point_1 TEXT DEFAULT ''`,
     `ALTER TABLE projects ADD COLUMN trust_point_2 TEXT DEFAULT ''`,
@@ -247,6 +252,10 @@ export type ProjectRow = {
   cashfree_active: number;
   cashfree_mode: string;
   payment_provider: string;
+  payu_merchant_key: string;
+  payu_salt: string;
+  payu_active: number;
+  payu_mode: string;
   brochure_url: string;
   trust_point_1: string;
   trust_point_2: string;

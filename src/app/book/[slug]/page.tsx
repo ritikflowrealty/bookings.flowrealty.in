@@ -25,7 +25,13 @@ export default async function BookPage({ params }: { params: Promise<{ slug: str
     trustPoints.length > 0
       ? trustPoints
       : [
-          `Reserve through verified ${project.payment_provider === 'cashfree' ? 'Cashfree' : 'Razorpay'} checkout`,
+          `Reserve through verified ${
+            project.payment_provider === 'cashfree'
+              ? 'Cashfree'
+              : project.payment_provider === 'payu'
+                ? 'PayU'
+                : 'Razorpay'
+          } checkout`,
           'Sales team reaches out within 24 hours',
           'Site visit, paperwork, and possession handled end-to-end',
         ];

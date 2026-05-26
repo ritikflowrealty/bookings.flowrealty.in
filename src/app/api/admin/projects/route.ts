@@ -40,12 +40,20 @@ export async function POST(req: NextRequest) {
     const trust_point_1 = sanitizeText(body.trust_point_1, 200);
     const trust_point_2 = sanitizeText(body.trust_point_2, 200);
     const trust_point_3 = sanitizeText(body.trust_point_3, 200);
-    const payment_provider = body.payment_provider === 'cashfree' ? 'cashfree' : 'razorpay';
+    const payment_provider =
+      body.payment_provider === 'cashfree'
+        ? 'cashfree'
+        : body.payment_provider === 'payu'
+          ? 'payu'
+          : 'razorpay';
     const razorpay_key_id = sanitizeText(body.razorpay_key_id, 120);
     const razorpay_key_secret = sanitizeText(body.razorpay_key_secret, 200);
     const cashfree_app_id = sanitizeText(body.cashfree_app_id, 120);
     const cashfree_secret_key = sanitizeText(body.cashfree_secret_key, 200);
     const cashfree_mode = body.cashfree_mode === 'production' ? 'production' : 'test';
+    const payu_merchant_key = sanitizeText(body.payu_merchant_key, 120);
+    const payu_salt = sanitizeText(body.payu_salt, 200);
+    const payu_mode = body.payu_mode === 'production' ? 'production' : 'test';
 
     const db = getDb();
     const maxResult = await db.execute('SELECT MAX(display_order) as m FROM projects');
@@ -58,14 +66,16 @@ export async function POST(req: NextRequest) {
           brochure_url, trust_point_1, trust_point_2, trust_point_3, payment_provider,
           razorpay_key_id, razorpay_key_secret, razorpay_active,
           cashfree_app_id, cashfree_secret_key, cashfree_active, cashfree_mode,
+          payu_merchant_key, payu_salt, payu_active, payu_mode,
           is_visible, booking_enabled, payment_enabled, display_order
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, ?) RETURNING id`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, ?) RETURNING id`,
       args: [
         slug, name, developer, city, description, highlight_text, image_url, learn_more_url,
         brochure_url, trust_point_1, trust_point_2, trust_point_3, payment_provider,
         razorpay_key_id, razorpay_key_secret, razorpay_key_id && razorpay_key_secret ? 1 : 0,
         cashfree_app_id, cashfree_secret_key, cashfree_app_id && cashfree_secret_key ? 1 : 0,
         cashfree_mode,
+        payu_merchant_key, payu_salt, payu_merchant_key && payu_salt ? 1 : 0, payu_mode,
         max + 1,
       ],
     });
