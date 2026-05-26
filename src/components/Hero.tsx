@@ -17,6 +17,25 @@ export async function Hero() {
   if (videoUrl) {
     return (
       <section className="relative">
+        {/* Preload + DNS hints for the video host so browsers start fetching
+            during HTML parse, before React hydrates. The link tag is hoisted
+            into <head> by Next.js. */}
+        <link rel="preload" as="video" href={videoUrl} type="video/mp4" />
+        {posterUrl && <link rel="preload" as="image" href={posterUrl} />}
+        {(() => {
+          try {
+            const u = new URL(videoUrl);
+            return (
+              <>
+                <link rel="preconnect" href={u.origin} crossOrigin="" />
+                <link rel="dns-prefetch" href={u.origin} />
+              </>
+            );
+          } catch {
+            return null;
+          }
+        })()}
+
         <HeroVideo videoUrl={videoUrl} posterUrl={posterUrl} />
         {/* Buttons positioned at the bottom of the video */}
         <div className="absolute bottom-6 sm:bottom-12 left-0 right-0 flex flex-wrap items-center justify-center gap-3 sm:gap-4 pointer-events-auto z-10 px-5">

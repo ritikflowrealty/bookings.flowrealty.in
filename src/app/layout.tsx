@@ -5,6 +5,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { SmoothScroll } from '@/components/SmoothScroll';
 import { PageReveal } from '@/components/PageReveal';
 import { AuthProvider } from '@/components/AuthProvider';
+import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 import './globals.css';
 
 const poppins = Poppins({
@@ -96,6 +97,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <SmoothScroll />
           <PageReveal>{children}</PageReveal>
         </AuthProvider>
+        <ServiceWorkerRegister />
         <Analytics />
         <SpeedInsights />
       </body>
