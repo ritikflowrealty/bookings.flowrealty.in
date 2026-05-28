@@ -10,6 +10,8 @@ import { DevelopersManagement } from './DevelopersManagement';
 import { CustomersManagement } from './CustomersManagement';
 import { InvoicesManagement } from './InvoicesManagement';
 import { ContentManagement } from './ContentManagement';
+import { EnquiriesManagement } from './EnquiriesManagement';
+import { CareersManagement } from './CareersManagement';
 
 const TOKEN_KEY = 'fr_admin_token';
 
@@ -70,7 +72,7 @@ type Booking = {
 };
 
 export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
-  const [tab, setTab] = useState<'projects' | 'bookings' | 'leads' | 'cp' | 'invoices' | 'developers' | 'customers' | 'content' | 'settings'>('projects');
+  const [tab, setTab] = useState<'projects' | 'bookings' | 'enquiries' | 'careers' | 'leads' | 'cp' | 'invoices' | 'developers' | 'customers' | 'content' | 'settings'>('projects');
   const [projects, setProjects] = useState<AdminProject[] | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [bookings, setBookings] = useState<Booking[] | null>(null);
@@ -173,6 +175,8 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
           <div className="inline-flex p-1 rounded-full glass">
             <TabBtn active={tab === 'projects'} onClick={() => setTab('projects')}>Projects</TabBtn>
             <TabBtn active={tab === 'bookings'} onClick={() => setTab('bookings')}>Bookings</TabBtn>
+            <TabBtn active={tab === 'enquiries'} onClick={() => setTab('enquiries')}>Enquiries</TabBtn>
+            <TabBtn active={tab === 'careers'} onClick={() => setTab('careers')}>Careers</TabBtn>
             <TabBtn active={tab === 'leads'} onClick={() => setTab('leads')}>Leads</TabBtn>
             <TabBtn active={tab === 'cp'} onClick={() => setTab('cp')}>Channel Partners</TabBtn>
             <TabBtn active={tab === 'invoices'} onClick={() => setTab('invoices')}>Invoices</TabBtn>
@@ -318,6 +322,8 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
         {tab === 'cp' && <CPManagement authHeader={authHeader} />}
         {tab === 'invoices' && <InvoicesManagement authHeader={authHeader} />}
         {tab === 'leads' && <LeadsManagement authHeader={authHeader} />}
+        {tab === 'enquiries' && <EnquiriesManagement authHeader={authHeader} />}
+        {tab === 'careers' && <CareersManagement authHeader={authHeader} />}
         {tab === 'developers' && <DevelopersManagement authHeader={authHeader} />}
         {tab === 'customers' && <CustomersManagement authHeader={authHeader} />}
         {tab === 'content' && <ContentManagement authHeader={authHeader} />}
