@@ -35,7 +35,14 @@ function client(): S3Client {
   return _client;
 }
 
-export type UploadType = 'cp-documents' | 'project-images' | 'project-brochures' | 'team-photos' | 'news' | 'misc';
+export type UploadType =
+  | 'cp-documents'
+  | 'project-images'
+  | 'project-brochures'
+  | 'team-photos'
+  | 'news'
+  | 'cv'
+  | 'misc';
 
 export function bucket(): string {
   const b = process.env.R2_BUCKET;
