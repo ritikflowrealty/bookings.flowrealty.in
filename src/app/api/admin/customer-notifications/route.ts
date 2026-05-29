@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { ensureSchema, getDb } from '@/lib/db';
 import { guardAdmin } from '@/lib/guard';
 import { sanitizeText } from '@/lib/validation';
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
 
   // WhatsApp via Gallabox — anything we send to the customer should also go
   // out on WhatsApp via the project they're booked into.
-  void (async () => {
+  after(async () => {
     try {
       const unitId = body.unit_id ? Number(body.unit_id) : null;
       const cRow = await getDb().execute({
@@ -83,7 +84,7 @@ export async function POST(req: NextRequest) {
     } catch (err: any) {
       console.error('[gallabox] customer notification fan-out failed:', err?.message || err);
     }
-  })();
+  });
 
   return NextResponse.json({ ok: true });
 }

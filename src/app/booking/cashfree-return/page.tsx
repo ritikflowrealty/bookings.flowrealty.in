@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { after } from 'next/server';
 import { getBookingByReference } from '@/lib/bookings';
 import { getProjectById } from '@/lib/projects';
 import { verifyCashfreePayment } from '@/lib/cashfree';
@@ -44,7 +45,7 @@ export default async function CashfreeReturnPage({
       provider: 'cashfree',
     });
 
-    void (async () => {
+    after(async () => {
       try {
         const s = await getSettings();
         const us = buildUsRecipients(setting(s, 'internal_whatsapp_numbers', ''));
@@ -72,12 +73,12 @@ export default async function CashfreeReturnPage({
       } catch (err: any) {
         console.error('[gallabox] cashfree booking.paid notify failed:', err?.message || err);
       }
-    })();
+    });
   } else {
     await markFailed(booking.id, 'Cashfree payment not completed');
     await audit('booking.failed', { booking_id: booking.id, reference: ref, provider: 'cashfree' });
 
-    void (async () => {
+    after(async () => {
       try {
         const s = await getSettings();
         const us = buildUsRecipients(setting(s, 'internal_whatsapp_numbers', ''));
@@ -104,7 +105,7 @@ export default async function CashfreeReturnPage({
       } catch (err: any) {
         console.error('[gallabox] cashfree booking.failed notify failed:', err?.message || err);
       }
-    })();
+    });
   }
 
   redirect(`/booking/success?ref=${encodeURIComponent(ref)}`);

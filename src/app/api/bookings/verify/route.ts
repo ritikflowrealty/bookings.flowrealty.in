@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { getBookingById, markPaid, markFailed } from '@/lib/bookings';
 import { getProjectById } from '@/lib/projects';
 import { verifyRazorpaySignature } from '@/lib/razorpay';
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
       await markFailed(bookingId, 'Invalid signature');
       await audit('booking.signature_invalid', { booking_id: bookingId });
       // Notify on payment failure (customer + us)
-      void (async () => {
+      after(async () => {
         try {
           const s = await getSettings();
           const us = buildUsRecipients(setting(s, 'internal_whatsapp_numbers', ''));
@@ -68,7 +69,7 @@ export async function POST(req: NextRequest) {
         } catch (err: any) {
           console.error('[gallabox] booking.failed notify failed:', err?.message || err);
         }
-      })();
+      });
       return NextResponse.json({ ok: false, message: 'Invalid signature.' }, { status: 400 });
     }
 
@@ -80,7 +81,7 @@ export async function POST(req: NextRequest) {
     });
 
     // WhatsApp fan-out: customer, developer, us (project-gated)
-    void (async () => {
+    after(async () => {
       try {
         const s = await getSettings();
         const us = buildUsRecipients(setting(s, 'internal_whatsapp_numbers', ''));
@@ -108,7 +109,7 @@ export async function POST(req: NextRequest) {
       } catch (err: any) {
         console.error('[gallabox] booking.paid notify failed:', err?.message || err);
       }
-    })();
+    });
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {
