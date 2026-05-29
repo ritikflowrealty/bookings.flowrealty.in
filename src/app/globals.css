@@ -306,150 +306,106 @@ nav .font-display {
 
 
 /* ============================================================
-   Site-wide ambient background ("Flow" themed)
-   Mounted once via <SiteAmbience /> in the root layout.
+   Site-wide ambient background (rendered once via <SiteAmbience />)
+   ------------------------------------------------------------
+   The body still sits on #0b0b0f, but two slow-drifting neon blooms,
+   a faint masked grid, a noise-grain layer, and a vignette sit
+   behind every page so it never feels like flat black.
    ============================================================ */
-.site-ambience {
-  contain: strict;
-  /* Slight base wash so the dark canvas isn't pure black even before the
-     SVG/blooms paint. Subtle but present on every page. */
-  background:
-    radial-gradient(120% 80% at 50% 0%, rgba(123, 46, 255, 0.10), transparent 60%),
-    radial-gradient(120% 80% at 50% 100%, rgba(255, 60, 130, 0.10), transparent 60%),
-    #0b0b0f;
-}
+.site-ambience { contain: strict; }
 
-/* ----- Neon blooms (the colour mass) -------------------------- */
 .ambience-bloom {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(110px);
-  will-change: transform, opacity;
-  mix-blend-mode: screen;
+  filter: blur(120px);
+  opacity: 0.55;
+  will-change: transform;
 }
 
-.ambience-bloom--violet {
-  width: 70vw;
-  height: 70vw;
-  max-width: 1100px;
-  max-height: 1100px;
-  top: -22vw;
-  left: -10vw;
-  opacity: 0.85;
-  background: radial-gradient(
-    closest-side,
-    rgba(123, 46, 255, 0.85),
-    rgba(123, 46, 255, 0.35) 45%,
-    transparent 75%
-  );
-  animation: ambienceDriftA 22s ease-in-out infinite alternate;
-}
-
-.ambience-bloom--magenta {
+.ambience-bloom--a {
   width: 60vw;
   height: 60vw;
   max-width: 900px;
   max-height: 900px;
-  top: 30vh;
-  right: -15vw;
-  opacity: 0.8;
+  top: -18vw;
+  left: -10vw;
   background: radial-gradient(
     closest-side,
-    rgba(217, 46, 255, 0.85),
-    rgba(255, 60, 130, 0.35) 45%,
+    rgba(123, 46, 255, 0.55),
+    rgba(217, 46, 255, 0.18) 55%,
     transparent 75%
   );
-  animation: ambienceDriftB 28s ease-in-out infinite alternate;
+  animation: ambienceDriftA 26s ease-in-out infinite alternate;
 }
 
-.ambience-bloom--orange {
-  width: 65vw;
-  height: 65vw;
-  max-width: 1000px;
-  max-height: 1000px;
+.ambience-bloom--b {
+  width: 70vw;
+  height: 70vw;
+  max-width: 1100px;
+  max-height: 1100px;
   bottom: -25vw;
-  left: 25vw;
-  opacity: 0.7;
+  right: -15vw;
   background: radial-gradient(
     closest-side,
-    rgba(255, 106, 0, 0.7),
-    rgba(255, 60, 130, 0.3) 45%,
+    rgba(255, 60, 130, 0.45),
+    rgba(255, 106, 0, 0.15) 55%,
     transparent 75%
   );
-  animation: ambienceDriftC 34s ease-in-out infinite alternate;
+  animation: ambienceDriftB 32s ease-in-out infinite alternate;
 }
 
-@keyframes ambienceDriftA {
-  0%   { transform: translate3d(0, 0, 0)         scale(1); }
-  100% { transform: translate3d(8vw, 6vh, 0)     scale(1.1); }
-}
-@keyframes ambienceDriftB {
-  0%   { transform: translate3d(0, 0, 0)         scale(1); }
-  100% { transform: translate3d(-7vw, 8vh, 0)    scale(1.08); }
-}
-@keyframes ambienceDriftC {
-  0%   { transform: translate3d(0, 0, 0)         scale(1); }
-  100% { transform: translate3d(6vw, -7vh, 0)    scale(1.12); }
-}
-
-/* ----- Flow curves (animated SVG strokes) --------------------- */
-.ambience-flow {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.85;
-  mix-blend-mode: screen;
-}
-
-.ambience-flow .flow-line {
-  fill: none;
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-dasharray: 220 1800;
-  stroke-dashoffset: 0;
-  filter: drop-shadow(0 0 6px rgba(217, 46, 255, 0.5));
-  will-change: stroke-dashoffset;
-}
-
-.flow-line--1 { animation: flowMove 14s linear infinite; }
-.flow-line--2 { animation: flowMove 18s linear infinite reverse; animation-delay: -3s; }
-.flow-line--3 { animation: flowMove 22s linear infinite;          animation-delay: -7s; }
-.flow-line--4 { animation: flowMove 16s linear infinite reverse; animation-delay: -1s; }
-.flow-line--5 { animation: flowMove 26s linear infinite;          animation-delay: -5s; }
-
-@keyframes flowMove {
-  from { stroke-dashoffset: 2020; }
-  to   { stroke-dashoffset: 0; }
-}
-
-/* ----- Faint masked grid -------------------------------------- */
 .ambience-grid {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
   background-size: 96px 96px;
-  -webkit-mask-image: radial-gradient(ellipse at center, black 25%, transparent 78%);
-  mask-image: radial-gradient(ellipse at center, black 25%, transparent 78%);
-  opacity: 0.5;
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 78%);
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 78%);
+  opacity: 0.7;
 }
 
-/* ----- Vignette so cards near edges feel anchored ------------- */
+/* Subtle film grain — fixes gradient banding on phones / OLEDs */
+.ambience-noise {
+  position: absolute;
+  inset: -1px;
+  background-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'>\
+<filter id='n'>\
+<feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/>\
+<feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.06 0'/>\
+</filter>\
+<rect width='100%' height='100%' filter='url(%23n)'/>\
+</svg>");
+  background-size: 160px 160px;
+  opacity: 0.35;
+  mix-blend-mode: overlay;
+}
+
+/* Edge vignette so content doesn't float off into the glow */
 .ambience-vignette {
   position: absolute;
   inset: 0;
   background: radial-gradient(
     ellipse at center,
-    transparent 50%,
-    rgba(0, 0, 0, 0.55) 100%
+    transparent 55%,
+    rgba(0, 0, 0, 0.45) 100%
   );
 }
 
+@keyframes ambienceDriftA {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(8vw, 6vh, 0) scale(1.08); }
+}
+@keyframes ambienceDriftB {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(-6vw, -8vh, 0) scale(1.1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .ambience-bloom,
-  .flow-line {
-    animation: none !important;
+  .ambience-bloom--a,
+  .ambience-bloom--b {
+    animation: none;
   }
 }
