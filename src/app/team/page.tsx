@@ -3,7 +3,7 @@ import { Footer } from '@/components/Footer';
 import { SectionReveal } from '@/components/SectionReveal';
 import { TeamMemberCard } from '@/components/TeamMemberCard';
 import { FounderCreds } from '@/components/FounderCreds';
-import { JoinFlowCta } from '@/components/JoinFlowCta';
+import { RegisterInterest } from '@/components/RegisterInterest';
 import { ensureSchema, getDb } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -62,10 +62,8 @@ export default async function TeamPage() {
           </SectionReveal>
         </div>
 
-        {/* Co-founders — same component used on home/about, but the team page
-            already provides a primary heading so we suppress the founders block's
-            own "LEADERSHIP / People who've been on both sides." header. */}
-        <FounderCreds hideHeading />
+        {/* Co-founders — same component used on home/about */}
+        <FounderCreds />
 
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           {leadership.length > 0 && (
@@ -91,7 +89,7 @@ export default async function TeamPage() {
           )}
         </div>
 
-        <JoinFlowCta />
+        <RegisterInterest />
       </main>
       <Footer />
     </>

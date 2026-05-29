@@ -6,7 +6,6 @@ import { SmoothScroll } from '@/components/SmoothScroll';
 import { PageReveal } from '@/components/PageReveal';
 import { AuthProvider } from '@/components/AuthProvider';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
-import { SiteAmbience } from '@/components/SiteAmbience';
 import './globals.css';
 
 const poppins = Poppins({
@@ -94,7 +93,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-screen bg-bg font-sans">
-        <SiteAmbience />
         <AuthProvider>
           <SmoothScroll />
           <PageReveal>{children}</PageReveal>

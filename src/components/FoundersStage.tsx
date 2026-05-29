@@ -38,13 +38,7 @@ function splitPedigree(items: string[]) {
   return { education, work };
 }
 
-export function FoundersStage({
-  founders,
-  hideHeading = false,
-}: {
-  founders: FounderStageItem[];
-  hideHeading?: boolean;
-}) {
+export function FoundersStage({ founders }: { founders: FounderStageItem[] }) {
   const [hovered, setHovered] = useState<number | null>(null);
 
   if (founders.length === 0) return null;
@@ -52,14 +46,12 @@ export function FoundersStage({
   return (
     <section className="py-12 overflow-hidden">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
-        {!hideHeading && (
-          <div className="max-w-2xl mb-8 lg:mb-10">
-            <span className="chip">Leadership</span>
-            <h2 className="mt-3 font-heading uppercase text-2xl sm:text-3xl lg:text-4xl tracking-tight">
-              People who&rsquo;ve been on both sides.
-            </h2>
-          </div>
-        )}
+        <div className="max-w-2xl mb-8 lg:mb-10">
+          <span className="chip">Leadership</span>
+          <h2 className="mt-3 font-heading uppercase text-2xl sm:text-3xl lg:text-4xl tracking-tight">
+            People who&rsquo;ve been on both sides.
+          </h2>
+        </div>
 
         <div
           className="grid gap-4 lg:gap-5 grid-cols-1 sm:grid-cols-2"
