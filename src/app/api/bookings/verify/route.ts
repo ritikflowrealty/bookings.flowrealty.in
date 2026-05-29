@@ -3,6 +3,8 @@ import { getBookingById, markPaid, markFailed } from '@/lib/bookings';
 import { getProjectById } from '@/lib/projects';
 import { verifyRazorpaySignature } from '@/lib/razorpay';
 import { audit } from '@/lib/audit';
+import { notifyGallabox, buildUsRecipients } from '@/lib/gallabox';
+import { getSettings, setting } from '@/lib/settings';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -39,6 +41,34 @@ export async function POST(req: NextRequest) {
     if (!valid) {
       await markFailed(bookingId, 'Invalid signature');
       await audit('booking.signature_invalid', { booking_id: bookingId });
+      // Notify on payment failure (customer + us)
+      void (async () => {
+        try {
+          const s = await getSettings();
+          const us = buildUsRecipients(setting(s, 'internal_whatsapp_numbers', ''));
+          await notifyGallabox({
+            project,
+            event: {
+              event: 'booking.failed',
+              title: 'Payment failed',
+              data: {
+                reference: booking.reference_number,
+                tower_unit: booking.tower_unit,
+                amount: booking.amount,
+                reason: 'Signature verification failed',
+                customer_name: booking.full_name,
+                customer_phone: booking.mobile,
+              },
+            },
+            recipients: [
+              { role: 'customer', phone: booking.mobile, name: booking.full_name },
+              ...us,
+            ],
+          });
+        } catch (err: any) {
+          console.error('[gallabox] booking.failed notify failed:', err?.message || err);
+        }
+      })();
       return NextResponse.json({ ok: false, message: 'Invalid signature.' }, { status: 400 });
     }
 
@@ -48,6 +78,37 @@ export async function POST(req: NextRequest) {
       reference: booking.reference_number,
       payment_id: paymentId,
     });
+
+    // WhatsApp fan-out: customer, developer, us (project-gated)
+    void (async () => {
+      try {
+        const s = await getSettings();
+        const us = buildUsRecipients(setting(s, 'internal_whatsapp_numbers', ''));
+        await notifyGallabox({
+          project,
+          event: {
+            event: 'booking.paid',
+            title: 'Payment successful',
+            data: {
+              reference: booking.reference_number,
+              tower_unit: booking.tower_unit,
+              amount: booking.amount,
+              payment_id: paymentId,
+              provider: 'razorpay',
+              customer_name: booking.full_name,
+              customer_phone: booking.mobile,
+            },
+          },
+          recipients: [
+            { role: 'customer', phone: booking.mobile, name: booking.full_name },
+            { role: 'developer', phone: project.developer_whatsapp, name: project.developer },
+            ...us,
+          ],
+        });
+      } catch (err: any) {
+        console.error('[gallabox] booking.paid notify failed:', err?.message || err);
+      }
+    })();
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {

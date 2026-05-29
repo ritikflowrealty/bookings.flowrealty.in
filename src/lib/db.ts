@@ -127,6 +127,10 @@ async function runMigrations(db: Client): Promise<void> {
     `ALTER TABLE enquiries ADD COLUMN project_name TEXT DEFAULT ''`,
     `ALTER TABLE enquiries ADD COLUMN unit_count TEXT DEFAULT ''`,
     `ALTER TABLE enquiries ADD COLUMN rera_number TEXT DEFAULT ''`,
+    // Gallabox per-project WhatsApp webhook
+    `ALTER TABLE projects ADD COLUMN gallabox_webhook_url TEXT DEFAULT ''`,
+    `ALTER TABLE projects ADD COLUMN gallabox_active INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE projects ADD COLUMN developer_whatsapp TEXT DEFAULT ''`,
   ];
   for (const sql of addColumns) {
     try {
@@ -256,6 +260,9 @@ export type ProjectRow = {
   payu_salt: string;
   payu_active: number;
   payu_mode: string;
+  gallabox_webhook_url: string;
+  gallabox_active: number;
+  developer_whatsapp: string;
   brochure_url: string;
   trust_point_1: string;
   trust_point_2: string;

@@ -4,6 +4,9 @@ import { ensureSchema, getDb } from '@/lib/db';
 import { sanitizeText } from '@/lib/validation';
 import { audit } from '@/lib/audit';
 import { sendToCustomerOrAdmin } from '@/lib/push';
+import { notifyGallabox, buildUsRecipients } from '@/lib/gallabox';
+import { getProjectById } from '@/lib/projects';
+import { getSettings, setting } from '@/lib/settings';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -28,7 +31,7 @@ export async function POST(req: NextRequest) {
 
   const db = getDb();
   const lead = await db.execute({
-    sql: `SELECT id, channel_partner_id, booking_id FROM leads WHERE id = ? LIMIT 1`,
+    sql: `SELECT id, channel_partner_id, booking_id, project_id FROM leads WHERE id = ? LIMIT 1`,
     args: [lead_id],
   });
   const l = lead.rows[0] as any;
@@ -49,6 +52,47 @@ export async function POST(req: NextRequest) {
     url: '/admin',
     tag: 'invoice-new',
   }).catch(() => {});
+
+  // WhatsApp via Gallabox — developer + submitting CP + us
+  void (async () => {
+    try {
+      if (!l.project_id) return;
+      const project = await getProjectById(l.project_id);
+      if (!project) return;
+      const cpId = session.cpId;
+      if (!cpId) return;
+      const cpRow = await db.execute({
+        sql: `SELECT full_name, mobile FROM channel_partners WHERE id = ? LIMIT 1`,
+        args: [cpId],
+      });
+      const cp = cpRow.rows[0] as any;
+      if (!cp) return;
+      const s = await getSettings();
+      const us = buildUsRecipients(setting(s, 'internal_whatsapp_numbers', ''));
+      await notifyGallabox({
+        project,
+        event: {
+          event: 'invoice.submitted',
+          title: 'New CP invoice',
+          data: {
+            invoice_number,
+            amount,
+            cp_name: cp.full_name,
+            cp_phone: cp.mobile || '',
+            invoice_doc_url,
+            notes,
+          },
+        },
+        recipients: [
+          { role: 'developer', phone: project.developer_whatsapp, name: project.developer },
+          { role: 'cp', phone: cp.mobile || '', name: cp.full_name },
+          ...us,
+        ],
+      });
+    } catch (err: any) {
+      console.error('[gallabox] invoice.submitted notify failed:', err?.message || err);
+    }
+  })();
 
   return NextResponse.json({ ok: true });
 }

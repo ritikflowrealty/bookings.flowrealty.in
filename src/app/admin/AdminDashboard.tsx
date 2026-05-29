@@ -41,6 +41,9 @@ type AdminProject = {
   payu_salt: string;
   payu_active: number;
   payu_mode: string;
+  gallabox_webhook_url: string;
+  gallabox_active: number;
+  developer_whatsapp: string;
   is_visible: number;
   booking_enabled: number;
   payment_enabled: number;

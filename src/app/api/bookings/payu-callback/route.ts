@@ -3,6 +3,8 @@ import { getBookingByReference, markPaid, markFailed } from '@/lib/bookings';
 import { getProjectById } from '@/lib/projects';
 import { verifyPayuResponseHash } from '@/lib/payu';
 import { audit } from '@/lib/audit';
+import { notifyGallabox, buildUsRecipients } from '@/lib/gallabox';
+import { getSettings, setting } from '@/lib/settings';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -56,6 +58,36 @@ export async function POST(req: NextRequest) {
         payment_id: paymentId,
         provider: 'payu',
       });
+
+      void (async () => {
+        try {
+          const s = await getSettings();
+          const us = buildUsRecipients(setting(s, 'internal_whatsapp_numbers', ''));
+          await notifyGallabox({
+            project,
+            event: {
+              event: 'booking.paid',
+              title: 'Payment successful',
+              data: {
+                reference: txnid,
+                tower_unit: booking.tower_unit,
+                amount: booking.amount,
+                payment_id: paymentId,
+                provider: 'payu',
+                customer_name: booking.full_name,
+                customer_phone: booking.mobile,
+              },
+            },
+            recipients: [
+              { role: 'customer', phone: booking.mobile, name: booking.full_name },
+              { role: 'developer', phone: project.developer_whatsapp, name: project.developer },
+              ...us,
+            ],
+          });
+        } catch (err: any) {
+          console.error('[gallabox] payu booking.paid notify failed:', err?.message || err);
+        }
+      })();
     } else {
       await markFailed(booking.id, body.error_Message || body.error || 'PayU reported non-success');
       await audit('booking.failed', {
@@ -64,6 +96,35 @@ export async function POST(req: NextRequest) {
         provider: 'payu',
         status,
       });
+
+      void (async () => {
+        try {
+          const s = await getSettings();
+          const us = buildUsRecipients(setting(s, 'internal_whatsapp_numbers', ''));
+          await notifyGallabox({
+            project,
+            event: {
+              event: 'booking.failed',
+              title: 'Payment failed',
+              data: {
+                reference: txnid,
+                tower_unit: booking.tower_unit,
+                amount: booking.amount,
+                reason: body.error_Message || body.error || status,
+                provider: 'payu',
+                customer_name: booking.full_name,
+                customer_phone: booking.mobile,
+              },
+            },
+            recipients: [
+              { role: 'customer', phone: booking.mobile, name: booking.full_name },
+              ...us,
+            ],
+          });
+        } catch (err: any) {
+          console.error('[gallabox] payu booking.failed notify failed:', err?.message || err);
+        }
+      })();
     }
 
     return redirectTo(`/booking/success?ref=${encodeURIComponent(txnid)}`);

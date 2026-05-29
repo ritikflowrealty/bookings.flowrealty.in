@@ -3,6 +3,9 @@ import { ensureSchema, getDb } from '@/lib/db';
 import { guardAdmin } from '@/lib/guard';
 import { sanitizeText } from '@/lib/validation';
 import { audit } from '@/lib/audit';
+import { notifyGallabox, buildUsRecipients } from '@/lib/gallabox';
+import { getProjectById } from '@/lib/projects';
+import { getSettings, setting } from '@/lib/settings';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -40,6 +43,63 @@ export async function POST(req: NextRequest) {
   });
 
   await audit('admin.customer_doc_added', { customer_id, doc_type });
+
+  // WhatsApp the customer that a new document is available
+  void (async () => {
+    try {
+      // Get the customer's phone and resolve a project from either the
+      // explicit unit_id or their first known unit.
+      const unitId = body.unit_id ? Number(body.unit_id) : null;
+      const baseRow = await getDb().execute({
+        sql: `SELECT full_name, mobile FROM customer_users WHERE id = ? LIMIT 1`,
+        args: [customer_id],
+      });
+      const cust = baseRow.rows[0] as any;
+      if (!cust) return;
+
+      let projectId: number | null = null;
+      let towerUnit = '';
+      const unitRow = await getDb().execute({
+        sql: unitId
+          ? `SELECT project_id, tower_unit FROM customer_units WHERE id = ? AND customer_id = ? LIMIT 1`
+          : `SELECT project_id, tower_unit FROM customer_units WHERE customer_id = ? ORDER BY id LIMIT 1`,
+        args: unitId ? [unitId, customer_id] : [customer_id],
+      });
+      const u = unitRow.rows[0] as any;
+      if (u) {
+        projectId = Number(u.project_id);
+        towerUnit = String(u.tower_unit || '');
+      }
+      if (!projectId) return;
+
+      const project = await getProjectById(projectId);
+      if (!project) return;
+      const s = await getSettings();
+      const us = buildUsRecipients(setting(s, 'internal_whatsapp_numbers', ''));
+      await notifyGallabox({
+        project,
+        event: {
+          event: 'document.added',
+          title: 'New document',
+          data: {
+            doc_type,
+            doc_title: title,
+            doc_url,
+            tower_unit: towerUnit,
+            customer_name: cust.full_name || '',
+            customer_phone: cust.mobile || '',
+          },
+        },
+        recipients: [
+          { role: 'customer', phone: cust.mobile || '', name: cust.full_name || '' },
+          ...us,
+        ],
+      });
+    } catch (err: any) {
+      console.error('[gallabox] document.added notify failed:', err?.message || err);
+    }
+  })();
+
   return NextResponse.json({ ok: true });
 }
 

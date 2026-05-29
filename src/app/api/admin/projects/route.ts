@@ -54,6 +54,9 @@ export async function POST(req: NextRequest) {
     const payu_merchant_key = sanitizeText(body.payu_merchant_key, 120);
     const payu_salt = sanitizeText(body.payu_salt, 200);
     const payu_mode = body.payu_mode === 'production' ? 'production' : 'test';
+    const gallabox_webhook_url = sanitizeText(body.gallabox_webhook_url || '', 600);
+    const gallabox_active = body.gallabox_active && gallabox_webhook_url ? 1 : 0;
+    const developer_whatsapp = sanitizeText(body.developer_whatsapp || '', 20);
 
     const db = getDb();
     const maxResult = await db.execute('SELECT MAX(display_order) as m FROM projects');
@@ -67,8 +70,9 @@ export async function POST(req: NextRequest) {
           razorpay_key_id, razorpay_key_secret, razorpay_active,
           cashfree_app_id, cashfree_secret_key, cashfree_active, cashfree_mode,
           payu_merchant_key, payu_salt, payu_active, payu_mode,
+          gallabox_webhook_url, gallabox_active, developer_whatsapp,
           is_visible, booking_enabled, payment_enabled, display_order
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, ?) RETURNING id`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, ?) RETURNING id`,
       args: [
         slug, name, developer, city, description, highlight_text, image_url, learn_more_url,
         brochure_url, trust_point_1, trust_point_2, trust_point_3, payment_provider,
@@ -76,6 +80,7 @@ export async function POST(req: NextRequest) {
         cashfree_app_id, cashfree_secret_key, cashfree_app_id && cashfree_secret_key ? 1 : 0,
         cashfree_mode,
         payu_merchant_key, payu_salt, payu_merchant_key && payu_salt ? 1 : 0, payu_mode,
+        gallabox_webhook_url, gallabox_active, developer_whatsapp,
         max + 1,
       ],
     });

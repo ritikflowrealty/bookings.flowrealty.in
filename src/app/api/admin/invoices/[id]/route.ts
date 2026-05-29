@@ -4,6 +4,9 @@ import { guardAdmin } from '@/lib/guard';
 import { sanitizeText } from '@/lib/validation';
 import { audit } from '@/lib/audit';
 import { sendToCustomerOrAdmin } from '@/lib/push';
+import { notifyGallabox, buildUsRecipients } from '@/lib/gallabox';
+import { getProjectById } from '@/lib/projects';
+import { getSettings, setting } from '@/lib/settings';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -38,7 +41,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   // Push the CP
   const cpRow = await db.execute({
-    sql: `SELECT i.channel_partner_id, i.amount FROM cp_invoices i WHERE i.id = ?`,
+    sql: `SELECT i.channel_partner_id, i.amount, i.invoice_number, i.lead_id,
+                 cp.full_name AS cp_name, cp.mobile AS cp_mobile,
+                 l.project_id AS project_id
+          FROM cp_invoices i
+          LEFT JOIN channel_partners cp ON cp.id = i.channel_partner_id
+          LEFT JOIN leads l ON l.id = i.lead_id
+          WHERE i.id = ?`,
     args: [id],
   });
   const cp = cpRow.rows[0] as any;
@@ -49,6 +58,50 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       url: '/bro-portal/invoices',
       tag: `invoice-${status}`,
     }).catch(() => {});
+
+    // WhatsApp via Gallabox — recipients depend on which transition
+    void (async () => {
+      try {
+        if (!cp.project_id) return;
+        const project = await getProjectById(cp.project_id);
+        if (!project) return;
+        const s = await getSettings();
+        const us = buildUsRecipients(setting(s, 'internal_whatsapp_numbers', ''));
+
+        // CP always gets a status update; developer is included on
+        // approval / paid milestones (they care about money moving).
+        const recipients: Parameters<typeof notifyGallabox>[0]['recipients'] = [
+          { role: 'cp', phone: cp.cp_mobile || '', name: cp.cp_name || '' },
+          ...us,
+        ];
+        if (status === 'approved' || status === 'paid') {
+          recipients.push({
+            role: 'developer',
+            phone: project.developer_whatsapp,
+            name: project.developer,
+          });
+        }
+
+        await notifyGallabox({
+          project,
+          event: {
+            event: `invoice.${status}`,
+            title: `Invoice ${status.replace('_', ' ')}`,
+            data: {
+              invoice_number: cp.invoice_number || '',
+              amount: cp.amount,
+              cp_name: cp.cp_name || '',
+              cp_phone: cp.cp_mobile || '',
+              status,
+              notes,
+            },
+          },
+          recipients,
+        });
+      } catch (err: any) {
+        console.error('[gallabox] invoice status notify failed:', err?.message || err);
+      }
+    })();
   }
 
   return NextResponse.json({ ok: true });

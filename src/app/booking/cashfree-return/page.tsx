@@ -4,6 +4,8 @@ import { getProjectById } from '@/lib/projects';
 import { verifyCashfreePayment } from '@/lib/cashfree';
 import { markPaid, markFailed } from '@/lib/bookings';
 import { audit } from '@/lib/audit';
+import { notifyGallabox, buildUsRecipients } from '@/lib/gallabox';
+import { getSettings, setting } from '@/lib/settings';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,9 +43,68 @@ export default async function CashfreeReturnPage({
       payment_id: result.paymentId,
       provider: 'cashfree',
     });
+
+    void (async () => {
+      try {
+        const s = await getSettings();
+        const us = buildUsRecipients(setting(s, 'internal_whatsapp_numbers', ''));
+        await notifyGallabox({
+          project,
+          event: {
+            event: 'booking.paid',
+            title: 'Payment successful',
+            data: {
+              reference: ref,
+              tower_unit: booking.tower_unit,
+              amount: booking.amount,
+              payment_id: result.paymentId,
+              provider: 'cashfree',
+              customer_name: booking.full_name,
+              customer_phone: booking.mobile,
+            },
+          },
+          recipients: [
+            { role: 'customer', phone: booking.mobile, name: booking.full_name },
+            { role: 'developer', phone: project.developer_whatsapp, name: project.developer },
+            ...us,
+          ],
+        });
+      } catch (err: any) {
+        console.error('[gallabox] cashfree booking.paid notify failed:', err?.message || err);
+      }
+    })();
   } else {
     await markFailed(booking.id, 'Cashfree payment not completed');
     await audit('booking.failed', { booking_id: booking.id, reference: ref, provider: 'cashfree' });
+
+    void (async () => {
+      try {
+        const s = await getSettings();
+        const us = buildUsRecipients(setting(s, 'internal_whatsapp_numbers', ''));
+        await notifyGallabox({
+          project,
+          event: {
+            event: 'booking.failed',
+            title: 'Payment failed',
+            data: {
+              reference: ref,
+              tower_unit: booking.tower_unit,
+              amount: booking.amount,
+              reason: 'Cashfree payment not completed',
+              provider: 'cashfree',
+              customer_name: booking.full_name,
+              customer_phone: booking.mobile,
+            },
+          },
+          recipients: [
+            { role: 'customer', phone: booking.mobile, name: booking.full_name },
+            ...us,
+          ],
+        });
+      } catch (err: any) {
+        console.error('[gallabox] cashfree booking.failed notify failed:', err?.message || err);
+      }
+    })();
   }
 
   redirect(`/booking/success?ref=${encodeURIComponent(ref)}`);

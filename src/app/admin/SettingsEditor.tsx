@@ -79,6 +79,20 @@ const GROUPS: Group[] = [
       { key: 'careers_subline', label: 'Careers CTA description', type: 'textarea' },
     ],
   },
+  {
+    id: 'whatsapp',
+    label: 'WhatsApp Notifications',
+    description:
+      'Comma-separated WhatsApp numbers for the internal Flow Realty team. Every project event (booking, payment, invoice, construction stage, document, manual notification) on a Gallabox-enabled project will fan out a "us" WhatsApp to each number listed here.',
+    fields: [
+      {
+        key: 'internal_whatsapp_numbers',
+        label: 'Internal team WhatsApp numbers',
+        hint: 'e.g. 9876543210, +91 9123456789, 919000000000. With or without country code.',
+        type: 'textarea',
+      },
+    ],
+  },
 ];
 
 export function SettingsEditor({ authHeader }: { authHeader: () => HeadersInit }) {
