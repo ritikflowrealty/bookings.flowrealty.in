@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { ensureSchema, getDb } from '@/lib/db';
 import { guardAdmin } from '@/lib/guard';
 import { sanitizeText } from '@/lib/validation';
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest) {
   await audit('admin.customer_doc_added', { customer_id, doc_type });
 
   // WhatsApp the customer that a new document is available
-  void (async () => {
+  after(async () => {
     try {
       // Get the customer's phone and resolve a project from either the
       // explicit unit_id or their first known unit.
@@ -98,7 +99,7 @@ export async function POST(req: NextRequest) {
     } catch (err: any) {
       console.error('[gallabox] document.added notify failed:', err?.message || err);
     }
-  })();
+  });
 
   return NextResponse.json({ ok: true });
 }

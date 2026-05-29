@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { auth } from '@/auth';
 import { ensureSchema, getDb } from '@/lib/db';
 import { sanitizeText } from '@/lib/validation';
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
   }).catch(() => {});
 
   // WhatsApp via Gallabox — developer + submitting CP + us
-  void (async () => {
+  after(async () => {
     try {
       if (!l.project_id) return;
       const project = await getProjectById(l.project_id);
@@ -92,7 +93,7 @@ export async function POST(req: NextRequest) {
     } catch (err: any) {
       console.error('[gallabox] invoice.submitted notify failed:', err?.message || err);
     }
-  })();
+  });
 
   return NextResponse.json({ ok: true });
 }

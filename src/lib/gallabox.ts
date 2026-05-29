@@ -70,6 +70,11 @@ export function parsePhoneList(input: string | null | undefined): string[] {
 /**
  * Send the actual HTTP POST to the project's Gallabox webhook. Treats
  * everything as best-effort — a thrown error is caught and logged.
+ *
+ * Note: callers should invoke `notifyGallabox` from inside Next's `after()`
+ * so the request lambda stays alive long enough for the POST to complete.
+ * On Vercel, plain `void` fire-and-forget is killed when the response ends,
+ * which surfaces here as `AbortError: This operation was aborted`.
  */
 async function postToGallabox(
   webhookUrl: string,
@@ -83,10 +88,14 @@ async function postToGallabox(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
       signal: controller.signal,
+      // Hint to keep socket alive long enough on serverless
+      keepalive: true,
     });
     if (!r.ok) {
       const body = await r.text().catch(() => '');
       console.error('[gallabox] webhook returned non-2xx', r.status, body.slice(0, 200));
+    } else {
+      console.log('[gallabox] sent', payload.event, '→', payload.role, payload.recipient_phone);
     }
   } catch (err: any) {
     console.error('[gallabox] webhook failed:', err?.message || err);

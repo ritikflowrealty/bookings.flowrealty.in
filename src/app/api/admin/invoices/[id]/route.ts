@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { ensureSchema, getDb } from '@/lib/db';
 import { guardAdmin } from '@/lib/guard';
 import { sanitizeText } from '@/lib/validation';
@@ -60,7 +61,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }).catch(() => {});
 
     // WhatsApp via Gallabox — recipients depend on which transition
-    void (async () => {
+    after(async () => {
       try {
         if (!cp.project_id) return;
         const project = await getProjectById(cp.project_id);
@@ -101,7 +102,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       } catch (err: any) {
         console.error('[gallabox] invoice status notify failed:', err?.message || err);
       }
-    })();
+    });
   }
 
   return NextResponse.json({ ok: true });

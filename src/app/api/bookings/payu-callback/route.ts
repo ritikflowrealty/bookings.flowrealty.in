@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { getBookingByReference, markPaid, markFailed } from '@/lib/bookings';
 import { getProjectById } from '@/lib/projects';
 import { verifyPayuResponseHash } from '@/lib/payu';
@@ -59,7 +60,7 @@ export async function POST(req: NextRequest) {
         provider: 'payu',
       });
 
-      void (async () => {
+      after(async () => {
         try {
           const s = await getSettings();
           const us = buildUsRecipients(setting(s, 'internal_whatsapp_numbers', ''));
@@ -87,7 +88,7 @@ export async function POST(req: NextRequest) {
         } catch (err: any) {
           console.error('[gallabox] payu booking.paid notify failed:', err?.message || err);
         }
-      })();
+      });
     } else {
       await markFailed(booking.id, body.error_Message || body.error || 'PayU reported non-success');
       await audit('booking.failed', {
@@ -97,7 +98,7 @@ export async function POST(req: NextRequest) {
         status,
       });
 
-      void (async () => {
+      after(async () => {
         try {
           const s = await getSettings();
           const us = buildUsRecipients(setting(s, 'internal_whatsapp_numbers', ''));
@@ -124,7 +125,7 @@ export async function POST(req: NextRequest) {
         } catch (err: any) {
           console.error('[gallabox] payu booking.failed notify failed:', err?.message || err);
         }
-      })();
+      });
     }
 
     return redirectTo(`/booking/success?ref=${encodeURIComponent(txnid)}`);

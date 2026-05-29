@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { getProjectBySlug } from '@/lib/projects';
 import { createBooking, attachOrder } from '@/lib/bookings';
 import { validateBookingPayload, sanitizeText } from '@/lib/validation';
@@ -93,7 +94,7 @@ export async function POST(req: NextRequest) {
     // WhatsApp via Gallabox — fan out to customer + developer + us
     // (CP isn't known at booking-create time on the public booking flow;
     // CP-driven leads use a separate path in /api/cp/leads.)
-    void (async () => {
+    after(async () => {
       try {
         const s = await getSettings();
         const us = buildUsRecipients(setting(s, 'internal_whatsapp_numbers', ''));
@@ -121,7 +122,7 @@ export async function POST(req: NextRequest) {
       } catch (err: any) {
         console.error('[gallabox] booking.created notify failed:', err?.message || err);
       }
-    })();
+    });
 
     if (provider === 'razorpay') {
       const orderPromise = createRazorpayOrder({

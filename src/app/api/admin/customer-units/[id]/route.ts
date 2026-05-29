@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { ensureSchema, getDb } from '@/lib/db';
 import { guardAdmin } from '@/lib/guard';
 import { sanitizeText } from '@/lib/validation';
@@ -39,7 +40,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   // Construction stage update → WhatsApp the customer
   if (stageChange) {
-    void (async () => {
+    after(async () => {
       try {
         const r = await getDb().execute({
           sql: `SELECT u.tower_unit, u.project_id,
@@ -75,7 +76,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       } catch (err: any) {
         console.error('[gallabox] construction stage notify failed:', err?.message || err);
       }
-    })();
+    });
   }
 
   return NextResponse.json({ ok: true });
