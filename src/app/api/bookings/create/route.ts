@@ -6,6 +6,8 @@ import { createRazorpayOrder } from '@/lib/razorpay';
 import { createCashfreeOrder } from '@/lib/cashfree';
 import { buildPayuFormPayload } from '@/lib/payu';
 import { audit } from '@/lib/audit';
+import { notifyGallabox, buildUsRecipients } from '@/lib/gallabox';
+import { getSettings, setting } from '@/lib/settings';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -87,6 +89,39 @@ export async function POST(req: NextRequest) {
       email: booking.email,
       mobile: booking.mobile,
     };
+
+    // WhatsApp via Gallabox — fan out to customer + developer + us
+    // (CP isn't known at booking-create time on the public booking flow;
+    // CP-driven leads use a separate path in /api/cp/leads.)
+    void (async () => {
+      try {
+        const s = await getSettings();
+        const us = buildUsRecipients(setting(s, 'internal_whatsapp_numbers', ''));
+        await notifyGallabox({
+          project,
+          event: {
+            event: 'booking.created',
+            title: 'Booking initiated',
+            data: {
+              reference: booking.reference_number,
+              tower_unit: booking.tower_unit,
+              amount: booking.amount,
+              provider,
+              customer_name: booking.full_name,
+              customer_phone: booking.mobile,
+              customer_email: booking.email,
+            },
+          },
+          recipients: [
+            { role: 'customer', phone: booking.mobile, name: booking.full_name },
+            { role: 'developer', phone: project.developer_whatsapp, name: project.developer },
+            ...us,
+          ],
+        });
+      } catch (err: any) {
+        console.error('[gallabox] booking.created notify failed:', err?.message || err);
+      }
+    })();
 
     if (provider === 'razorpay') {
       const orderPromise = createRazorpayOrder({

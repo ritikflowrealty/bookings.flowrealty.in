@@ -5,6 +5,9 @@ import { ensureSchema, getDb } from '@/lib/db';
 import { sanitizeText } from '@/lib/validation';
 import { audit } from '@/lib/audit';
 import { sendToCustomerOrAdmin } from '@/lib/push';
+import { notifyGallabox, buildUsRecipients } from '@/lib/gallabox';
+import { getProjectById } from '@/lib/projects';
+import { getSettings, setting } from '@/lib/settings';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -97,6 +100,42 @@ export async function POST(req: NextRequest) {
       url: '/admin',
       tag: 'lead-new',
     }).catch(() => {});
+
+    // WhatsApp via Gallabox — to developer + the submitting CP + us
+    void (async () => {
+      try {
+        const project = await getProjectById(project_id);
+        if (!project) return;
+        const s = await getSettings();
+        const us = buildUsRecipients(setting(s, 'internal_whatsapp_numbers', ''));
+        await notifyGallabox({
+          project,
+          event: {
+            event: 'lead.cp_submitted',
+            title: 'New CP lead',
+            data: {
+              reference,
+              cp_name: cp.full_name,
+              cp_phone: cp.mobile || '',
+              prospect_name: `${first} ${last}`.trim(),
+              prospect_phone: mobile,
+              prospect_email: email,
+              configuration,
+              budget_range,
+              preferred_location,
+              timeline,
+            },
+          },
+          recipients: [
+            { role: 'developer', phone: project.developer_whatsapp, name: project.developer },
+            { role: 'cp', phone: cp.mobile || '', name: cp.full_name },
+            ...us,
+          ],
+        });
+      } catch (err: any) {
+        console.error('[gallabox] cp.lead_submitted notify failed:', err?.message || err);
+      }
+    })();
 
     return NextResponse.json({ ok: true, reference_number: reference });
   } catch (err: any) {

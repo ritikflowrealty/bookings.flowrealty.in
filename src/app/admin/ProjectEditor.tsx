@@ -31,6 +31,9 @@ type Editable = {
   crm_access_token: string;
   crm_api_key: string;
   crm_project_name: string;
+  gallabox_webhook_url: string;
+  gallabox_active: boolean;
+  developer_whatsapp: string;
 };
 
 const empty: Editable = {
@@ -61,6 +64,9 @@ const empty: Editable = {
   crm_access_token: '',
   crm_api_key: '',
   crm_project_name: '',
+  gallabox_webhook_url: '',
+  gallabox_active: false,
+  developer_whatsapp: '',
 };
 
 export function ProjectEditor({
@@ -105,6 +111,9 @@ export function ProjectEditor({
           crm_access_token: project.crm_access_token || '',
           crm_api_key: project.crm_api_key || '',
           crm_project_name: project.crm_project_name || '',
+          gallabox_webhook_url: project.gallabox_webhook_url || '',
+          gallabox_active: !!project.gallabox_active,
+          developer_whatsapp: project.developer_whatsapp || '',
         }
       : empty
   );
@@ -151,6 +160,9 @@ export function ProjectEditor({
         crm_access_token: form.crm_access_token,
         crm_api_key: form.crm_api_key,
         crm_project_name: form.crm_project_name,
+        gallabox_webhook_url: form.gallabox_webhook_url,
+        gallabox_active: form.gallabox_active ? 1 : 0,
+        developer_whatsapp: form.developer_whatsapp,
       };
       if (form.razorpay_key_secret_new) {
         payload.razorpay_key_secret = form.razorpay_key_secret_new;
@@ -411,6 +423,41 @@ export function ProjectEditor({
             onChange={(v) => set('crm_api_key', v)}
             placeholder="e.g. dcb2149d142f6619715bb25e15ca24ff"
           />
+
+          {/* Gallabox WhatsApp Notifications */}
+          <div className="sm:col-span-2 mt-2 pt-4 border-t border-white/10">
+            <p className="label">WhatsApp Notifications (Gallabox)</p>
+            <p className="text-xs text-ink-dim mt-1">
+              Per-project Gallabox webhook. When enabled, customers, the developer
+              and the internal team get WhatsApp updates for bookings, payments,
+              construction stage changes, invoice events and document uploads.
+            </p>
+          </div>
+          <Input
+            label="Gallabox Webhook URL"
+            value={form.gallabox_webhook_url}
+            onChange={(v) => set('gallabox_webhook_url', v)}
+            placeholder="https://server.gallabox.com/accounts/.../webhook"
+            full
+          />
+          <Input
+            label="Developer WhatsApp number"
+            value={form.developer_whatsapp}
+            onChange={(v) => set('developer_whatsapp', v)}
+            placeholder="9876543210 or +91 9876543210"
+            hint="The developer-side person who should receive updates."
+          />
+          <label className="flex items-center gap-3 mt-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={form.gallabox_active}
+              onChange={(e) => set('gallabox_active', e.target.checked)}
+              className="w-4 h-4 accent-[#D92EFF]"
+            />
+            <span className="text-sm">
+              Send WhatsApp notifications for this project
+            </span>
+          </label>
         </div>
 
         {error && (

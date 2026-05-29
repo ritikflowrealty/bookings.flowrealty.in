@@ -77,6 +77,24 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const payu_active = payu_merchant_key && payu_salt ? 1 : 0;
   const payu_mode = body.payu_mode === 'production' ? 'production' : 'test';
 
+  // Gallabox WhatsApp notifications (per project)
+  const gallabox_webhook_url =
+    body.gallabox_webhook_url !== undefined
+      ? sanitizeText(body.gallabox_webhook_url, 600)
+      : (row as any).gallabox_webhook_url || '';
+  const gallabox_active =
+    body.gallabox_active !== undefined
+      ? body.gallabox_active && gallabox_webhook_url
+        ? 1
+        : 0
+      : (row as any).gallabox_active && gallabox_webhook_url
+        ? 1
+        : 0;
+  const developer_whatsapp =
+    body.developer_whatsapp !== undefined
+      ? sanitizeText(body.developer_whatsapp, 20)
+      : (row as any).developer_whatsapp || '';
+
   // External CRM
   const crm_endpoint = sanitizeText(body.crm_endpoint ?? (row as any).crm_endpoint ?? '', 500);
   const crm_form_data = sanitizeText(body.crm_form_data ?? (row as any).crm_form_data ?? '', 5000);
@@ -123,6 +141,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             razorpay_key_id = ?, razorpay_key_secret = ?, razorpay_active = ?,
             cashfree_app_id = ?, cashfree_secret_key = ?, cashfree_active = ?, cashfree_mode = ?,
             payu_merchant_key = ?, payu_salt = ?, payu_active = ?, payu_mode = ?,
+            gallabox_webhook_url = ?, gallabox_active = ?, developer_whatsapp = ?,
             crm_endpoint = ?, crm_form_data = ?, crm_company_id = ?, crm_access_token = ?, crm_api_key = ?, crm_project_name = ?,
             is_visible = ?, booking_enabled = ?, payment_enabled = ?,
             updated_at = datetime('now')
@@ -135,6 +154,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       razorpay_key_id, razorpay_key_secret, razorpay_active,
       cashfree_app_id, cashfree_secret_key, cashfree_active, cashfree_mode,
       payu_merchant_key, payu_salt, payu_active, payu_mode,
+      gallabox_webhook_url, gallabox_active, developer_whatsapp,
       crm_endpoint, crm_form_data, crm_company_id, crm_access_token, crm_api_key, crm_project_name,
       is_visible, booking_enabled, payment_enabled,
       id,
