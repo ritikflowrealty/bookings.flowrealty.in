@@ -12,7 +12,7 @@ type Row = {
   pedigree: string;
 };
 
-export async function FounderCreds() {
+export async function FounderCreds({ hideHeading = false }: { hideHeading?: boolean } = {}) {
   await ensureSchema();
   const r = await getDb().execute(`
     SELECT id, name, designation, photo_url, cutout_url, bio, linkedin_url, pedigree
@@ -32,5 +32,5 @@ export async function FounderCreds() {
     pedigree: (f.pedigree || '').split('|').map((s) => s.trim()).filter(Boolean),
   }));
 
-  return <FoundersStage founders={founders} />;
+  return <FoundersStage founders={founders} hideHeading={hideHeading} />;
 }
